@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id "org.springframework.boot"
 }
 
 group 'org.example'
@@ -9,13 +10,18 @@ repositories {
     mavenCentral()
 }
 
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.12'
-    compile group: 'org.springframework', name: 'spring-jdbc', version: '4.3.8.RELEASE'
-    compile group: 'org.springframework', name: 'spring-dao', version: '2.0.8'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
-    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.12'
+    api 'org.springframework.boot:spring-boot-starter-jdbc'
     testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '2.3.2'
 }

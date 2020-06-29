@@ -1,4 +1,4 @@
-rootProject.name = 'RestApiBasics'
+rootProject.name = 'RestApiAdvanced'
 include 'service'
 include 'repository'
 include 'web'

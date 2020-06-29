@@ -1,4 +1,4 @@
-package com.epam.esm.config;
+package com.epam.esm.app;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;

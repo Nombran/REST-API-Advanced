@@ -80,7 +80,6 @@ public class CertificateDao {
     }
 
     public List<Certificate> findCertificates(String query, MapSqlParameterSource parameters) {
-        System.out.println(query);
         return namedParameterJdbcTemplate.query(query, parameters, new CertificateMapper());
     }
 }

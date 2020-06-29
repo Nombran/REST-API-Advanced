@@ -1,10 +1,9 @@
 plugins {
-    id "io.spring.dependency-management" version "1.0.8.RELEASE"
     id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'org.springframework.boot' version '2.3.1.RELEASE'
 }
 
 subprojects {
-
     group = 'com.epam.esm'
     version = '0.0.1-SNAPSHOT'
 
@@ -21,21 +20,12 @@ subprojects {
         annotationProcessor 'org.projectlombok:lombok:1.18.12'
         testCompileOnly 'org.projectlombok:lombok:1.18.12'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
-        implementation group: 'org.springframework', name: 'spring-core', version: '5.2.4.RELEASE'
-        implementation group: 'org.springframework', name: 'spring-context', version: '5.2.4.RELEASE'
-        implementation group: 'org.aspectj', name: 'aspectjweaver', version: '1.9.5'
-        implementation group: 'org.springframework', name: 'spring-beans', version: '5.2.4.RELEASE'
         implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
         implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.1.5.Final'
         implementation group: 'org.hibernate.validator', name: 'hibernate-validator-annotation-processor', version: '6.1.5.Final'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.3.3'
         testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.3.3'
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-        implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
 
-    }
-
-    dependencyManagement {
     }
 
     wrapper {
