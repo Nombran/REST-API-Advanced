@@ -1,0 +1,5 @@
+rootProject.name = 'RestApiBasics'
+include 'service'
+include 'repository'
+include 'web'
+

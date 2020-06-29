@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'war'
+}
+
+apply plugin: 'com.bmuschko.tomcat'
+
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.2.4.RELEASE'
+    implementation group: 'org.springframework', name: 'spring-web', version: '5.2.4.RELEASE'
+    implementation group: 'org.springframework', name: 'spring-webmvc', version: '5.2.4.RELEASE'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
+    providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+    implementation group: 'commons-logging', name: 'commons-logging', version: '1.1.1'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.2'
+
+    implementation project(':service')
+    implementation project(':repository')
+
+    def tomcatVersion = '7.0.76'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+[tomcatRun, tomcatRunWar, tomcatStop]*.stopPort = 8090
+[tomcatRun, tomcatRunWar, tomcatStop]*.stopKey = 'stopTomcat'
+
+
+tomcat {
+    httpPort = 8082
+    enableSSL = true
+    contextPath = '/'
+}
