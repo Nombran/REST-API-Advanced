@@ -20,8 +20,10 @@ jar {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.12'
-    api 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: '2.3.2'
+    api 'org.springframework.boot:spring-boot-starter-aop'
+    compileOnly ('org.hibernate:hibernate-jpamodelgen')
+    annotationProcessor('org.hibernate:hibernate-jpamodelgen')
 }

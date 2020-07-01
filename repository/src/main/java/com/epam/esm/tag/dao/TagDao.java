@@ -1,103 +1,74 @@
 package com.epam.esm.tag.dao;
 
-import com.epam.esm.tag.mapper.TagMapper;
 import com.epam.esm.tag.model.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 
-import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Repository
+@Transactional
 public class TagDao {
-    private final JdbcTemplate jdbcTemplate;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private static final String SQL_FIND = "select id, name from tag where id = ?";
-    private static final String SQL_INSERT = "insert into tag (name) values (:name)";
-    private static final String SQL_FIND_ALL = "select id, name from tag";
-    private static final String SQL_DELETE = "delete from tag where id = ?";
-    private static final String SQL_FIND_BY_CERTIFICATE_ID = "select id, name from tag inner" +
-            " join certificate_tag on tag.id = certificate_tag.tag_id where " +
-            "certificate_tag.certificate_id = ?";
-    private static final String SQL_FIND_BY_NAME = "select id, name from tag where name = ?";
-    private static final String SQL_FIND_BY_ID_AND_CERTIFICATE_ID = "select id, name from tag " +
-            "inner join certificate_tag on tag.id = certificate_tag.tag_id " +
-            "where tag.id = ? and certificate_tag.certificate_id = ?";
+    @PersistenceContext
+    private final EntityManager em;
 
-    public TagDao(final DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    @Autowired
+    public TagDao(EntityManager em) {
+        this.em = em;
     }
 
-    public Tag create(Tag tag) {
-        KeyHolder holder = new GeneratedKeyHolder();
-        SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("name", tag.getName());
-        namedParameterJdbcTemplate.update(SQL_INSERT, parameters, holder, new String[] { "id" });
-        tag.setId(holder.getKey().longValue());
-        return tag;
+    public void create(Tag tag) {
+        em.persist(tag);
     }
 
-    public boolean delete(long id) {
-        return jdbcTemplate.update(SQL_DELETE, id) > 0;
+    public void delete(Tag tag) {
+        em.remove(tag);
     }
 
     public Optional<Tag> find(long id) {
-        try {
-            Tag tag = jdbcTemplate.queryForObject(SQL_FIND,
-                    new Object[]{id},
-                    new TagMapper());
-            return Optional.ofNullable(tag);
-        }
-        catch(EmptyResultDataAccessException e) {
-            log.error("Tag with id " + id + " doesn't exist");
-            return Optional.empty();
-        }
+        return Optional.ofNullable(em.find(Tag.class, id));
     }
 
     public List<Tag> findAll() {
-        return jdbcTemplate.query(SQL_FIND_ALL, new TagMapper());
+        TypedQuery<Tag> query = em.createQuery("Select t from Tag t", Tag.class);
+        return query.getResultList();
     }
 
     public List<Tag> findByCertificateId(long id) {
-        return jdbcTemplate.query(SQL_FIND_BY_CERTIFICATE_ID, new Object[] {id}, new TagMapper());
+        TypedQuery<Tag> query = em.createQuery(
+                "SELECT t from Tag t inner join t.certificates c where c.id =: id",
+                Tag.class);
+        query.setParameter("id", id);
+        return query.getResultList();
     }
 
     public Optional<Tag> findByName(String name) {
-        try {
-        Tag tag = jdbcTemplate.queryForObject(SQL_FIND_BY_NAME,
-                new Object[]{name},
-                new TagMapper());
+        TypedQuery<Tag> query = em.createQuery(
+                "select t from Tag t where t.name =: name",
+                Tag.class);
+        query.setParameter("name", name);
+        List<Tag> result = query.getResultList();
+        Tag tag = result.size() == 0 ?
+                null : result.get(0);
         return Optional.ofNullable(tag);
-        }
-        catch(EmptyResultDataAccessException e) {
-            log.error("Tag with name " + name + " doesn't exist");
-            return Optional.empty();
-        }
     }
 
     public Optional<Tag> findByIdAndCertificateId(long id, long certificateId) {
-        try {
-            Tag tag = jdbcTemplate.queryForObject(SQL_FIND_BY_ID_AND_CERTIFICATE_ID,
-                    new Object[]{id, certificateId},
-                    new TagMapper());
-            return Optional.ofNullable(tag);
-        }
-        catch(EmptyResultDataAccessException e) {
-            log.error("Tag with id " + id + "which connected with certificate with id "
-                    + certificateId + " not found");
-            return Optional.empty();
-        }
+        TypedQuery<Tag> query = em.createQuery(
+                "select t from Tag t inner join t.certificates c where c.id =: certificateId and t.id =: tagId",
+                Tag.class);
+        query.setParameter("certificateId", certificateId);
+        query.setParameter("tagId", id);
+        Tag tag =  query.getSingleResult();
+        return Optional.ofNullable(tag);
     }
 
 }

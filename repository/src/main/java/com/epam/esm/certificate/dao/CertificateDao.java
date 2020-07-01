@@ -1,85 +1,98 @@
 package com.epam.esm.certificate.dao;
 
-import com.epam.esm.certificate.mapper.CertificateMapper;
 import com.epam.esm.certificate.model.Certificate;
+import com.epam.esm.certificate.model.Certificate_;
+import com.epam.esm.certificate.specification.OrderBy;
+import com.epam.esm.tag.model.Tag;
+import com.epam.esm.tag.model.Tag_;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Metamodel;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @Repository
+@Transactional
 public class CertificateDao {
-    private final JdbcTemplate jdbcTemplate;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final static String SQL_FIND = "select id, name, description, price," +
-            " creation_date, modification_date, duration from certificate where id = ?";
-    private final static String SQL_INSERT = "insert into certificate (name, description, price, creation_date," +
-            " duration) values (:name, :description, :price, :creation_date, :duration)";
-    private final static String SQL_FIND_ALL = "select id, name, description, price," +
-            " creation_date, modification_date, duration from certificate";
-    private final static String SQL_UPDATE = "update certificate set name = ?, description = ?, price  = ?," +
-            "modification_date = ?, duration = ? where id = ?";
-    private final static String SQL_DELETE = "delete from certificate where id = ?";
+    @PersistenceContext
+    private final EntityManager em;
 
-    public CertificateDao(final DataSource dataSource) {
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    @Autowired
+    public CertificateDao(EntityManager em) {
+        this.em = em;
     }
 
-    public Certificate create(Certificate certificate) {
-        KeyHolder holder = new GeneratedKeyHolder();
-        LocalDateTime creationDate = LocalDateTime.now();
-        SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("name", certificate.getName())
-                .addValue("description", certificate.getDescription())
-                .addValue("price", certificate.getPrice())
-                .addValue("creation_date", creationDate)
-                .addValue("duration", certificate.getDuration());
-        namedParameterJdbcTemplate.update(SQL_INSERT, parameters, holder, new String[] { "id" });
-        certificate.setId(holder.getKey().longValue());
-        certificate.setCreationDate(creationDate);
-        return certificate;
+
+    public void create(Certificate certificate) {
+            LocalDateTime creationDate = LocalDateTime.now();
+            certificate.setCreationDate(creationDate);
+            em.persist(certificate);
     }
 
-    public boolean update(Certificate certificate) {
-        return jdbcTemplate.update(SQL_UPDATE, certificate.getName(), certificate.getDescription(),
-                certificate.getPrice(), LocalDateTime.now(),
-                certificate.getDuration(), certificate.getId()) > 0;
+    public void update(Certificate certificate) {
+        LocalDateTime modificationDate = LocalDateTime.now();
+        certificate.setModificationDate(modificationDate);
+        em.merge(certificate);
     }
 
-    public boolean delete(long id) {
-        return jdbcTemplate.update(SQL_DELETE, id) > 0;
+    public void delete(Certificate certificate) {
+        em.remove(certificate);
     }
 
     public Optional<Certificate> find(long id) {
-        try {
-            Certificate certificate = jdbcTemplate.queryForObject(SQL_FIND,
-                    new Object[]{id},
-                    new CertificateMapper());
-            return Optional.ofNullable(certificate);
-        }
-        catch(EmptyResultDataAccessException e) {
-            log.error("Certificate with id " + id + "doesn't exists");
-            return Optional.empty();
-        }
+        return Optional.ofNullable(em.find(Certificate.class,id));
     }
 
     public List<Certificate> findAll() {
-        return jdbcTemplate.query(SQL_FIND_ALL, new CertificateMapper());
+        TypedQuery<Certificate> query = em.createQuery(
+                "select c from Certificate c",
+                Certificate.class);
+        return query.getResultList();
     }
 
-    public List<Certificate> findCertificates(String query, MapSqlParameterSource parameters) {
-        return namedParameterJdbcTemplate.query(query, parameters, new CertificateMapper());
+    public List<Certificate> findCertificates(String tagName, String textPart, String orderBy,
+                                              Integer page, Integer perPage) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
+        Root<Certificate> root = query.from(Certificate.class);
+        query.select(root);
+        List<Predicate> predicates = new ArrayList<>();
+
+        if(textPart != null && !textPart.isEmpty()) {
+            Predicate predicateForName = cb.like(root.get(Certificate_.NAME), "%" + textPart + "%");
+            Predicate predicateForDescription = cb.like(root.get(Certificate_.description), "%" + textPart + "%");
+            Predicate textPartPredicate = cb.or(predicateForName, predicateForDescription);
+            predicates.add(textPartPredicate);
+        }
+
+        if(Stream.of(OrderBy.values()).anyMatch(value ->
+                value.getOrderByFieldName().equals(orderBy))) {
+            query.orderBy(cb.asc(root.get(orderBy)));
+        }
+
+        if(tagName != null && !tagName.isEmpty()) {
+            Metamodel m = em.getMetamodel();
+            Join<Certificate, Tag> tagJoin = root.join(Certificate_.tags);
+            Predicate tagNamePredicate = cb.equal(tagJoin.get(Tag_.NAME), tagName);
+            predicates.add(tagNamePredicate);
+        }
+
+        query.where(cb.and(predicates.toArray(new Predicate[0])));
+
+        return em.createQuery(query)
+                .setFirstResult((page-1) * perPage)
+                .setMaxResults(perPage)
+                .getResultList();
     }
 }
