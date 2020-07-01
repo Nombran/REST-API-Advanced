@@ -29,12 +29,23 @@ public class CertificateDtoMapper{
     public void setupMapper() {
         mapper.createTypeMap(Certificate.class, CertificateDto.class)
                 .addMappings(m -> m.skip(CertificateDto::setTags)).setPostConverter(toDtoConverter());
+        mapper.createTypeMap(CertificateDto.class, Certificate.class)
+                .addMappings(m-> m.skip(Certificate::setTags)).setPostConverter(toEntityConverter());
     }
 
     public Converter<Certificate, CertificateDto> toDtoConverter() {
         return context -> {
             Certificate source = context.getSource();
             CertificateDto destination = context.getDestination();
+            mapSpecificFields(source, destination);
+            return context.getDestination();
+        };
+    }
+
+    public Converter<CertificateDto, Certificate> toEntityConverter() {
+        return context -> {
+            CertificateDto source = context.getSource();
+            Certificate destination = context.getDestination();
             mapSpecificFields(source, destination);
             return context.getDestination();
         };
@@ -47,4 +58,11 @@ public class CertificateDtoMapper{
                 .collect(Collectors.toList()));
     }
 
+    public void mapSpecificFields(CertificateDto source, Certificate destination) {
+        List<String> tagsAsString = source.getTags();
+        List<Tag> tagsAsObjects = tagsAsString.stream()
+                .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
+                .collect(Collectors.toList());
+        destination.setTags(tagsAsObjects);
+    }
 }

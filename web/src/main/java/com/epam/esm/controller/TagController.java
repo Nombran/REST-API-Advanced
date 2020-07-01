@@ -1,5 +1,6 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.tag.dto.TagDto;
 import com.epam.esm.tag.model.Tag;
 import com.epam.esm.tag.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ public class TagController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Tag> findAll() {
+    public List<TagDto> findAll() {
         return tagService.findAll();
     }
 
@@ -66,7 +67,7 @@ public class TagController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody Tag tag) {
+    public void create(@Valid @RequestBody TagDto tag) {
         tagService.create(tag);
     }
 
@@ -82,7 +83,7 @@ public class TagController {
      * @see Tag
      */
     @GetMapping(value = "/{id}")
-    public Tag findById(@PathVariable("id") long id) {
+    public TagDto findById(@PathVariable("id") long id) {
         return tagService.find(id);
     }
 

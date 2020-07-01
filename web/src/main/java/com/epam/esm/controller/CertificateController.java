@@ -2,21 +2,13 @@ package com.epam.esm.controller;
 
 import com.epam.esm.certificate.dto.CertificateDto;
 import com.epam.esm.certificate.service.CertificateService;
+import com.epam.esm.tag.dto.TagDto;
 import com.epam.esm.tag.service.TagService;
 import com.epam.esm.tag.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -64,7 +56,7 @@ public class CertificateController {
      * </p>
      *
      * @param tagName         represents tag's name, connected with certificate
-     * @param descriptionPart represents part of full certificate's description
+     * @param textPart represents part of full certificate's description
      * @param orderBy         represents field name for ordering by
      * @return list of certificatesDto objects, which match to all request params
      * @see CertificateDto
@@ -179,7 +171,7 @@ public class CertificateController {
      */
     @GetMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.OK)
-    public List<Tag> findAllCertificateTags(@PathVariable("id") long id) {
+    public List<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
         return tagService.findTagsByCertificateId(id);
     }
 
@@ -197,7 +189,7 @@ public class CertificateController {
      */
     @PostMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addTag(@PathVariable("id") long certificateId, @RequestBody Tag tag) {
+    public void addTag(@PathVariable("id") long certificateId, @RequestBody TagDto tag) {
         certificateService.addCertificateTag(tag, certificateId);
     }
 
