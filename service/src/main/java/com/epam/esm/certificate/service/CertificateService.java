@@ -13,9 +13,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -62,6 +70,45 @@ public class CertificateService {
         }
     }
 
+    @Transactional
+    public void patch(long id, CertificateDto changes) {
+        Certificate certificate = certificateDao.find(id).orElseThrow(() ->
+                new CertificateNotFoundException("Certificate with id = " + id + " doesn't exist")
+        );
+        CertificateDto certificateDto = modelMapper.map(certificate, CertificateDto.class);
+        mergeObjects(certificateDto, changes);
+
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<CertificateDto>> violations = validator.validate(certificateDto);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+        update(certificateDto);
+    }
+
+    public void mergeObjects(CertificateDto certificate, CertificateDto changes) {
+        String newName = changes.getName();
+        String newDescription = changes.getDescription();
+        BigDecimal newPrice = changes.getPrice();
+        Integer newDuration = changes.getDuration();
+        List<String> newTags = changes.getTags();
+        if(newName != null) {
+            certificate.setName(newName);
+        }
+        if(newDescription != null) {
+            certificate.setDescription(newDescription);
+        }
+        if(newPrice != null) {
+            certificate.setPrice(newPrice);
+        }
+        if(newDuration != null) {
+            certificate.setDuration(newDuration);
+        }
+        if(newTags != null) {
+            certificate.setTags(newTags);
+        }
+    }
+
     public void delete(long id) {
         Certificate certificate = certificateDao.find(id)
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id = " + id + " doesn't exist"));
@@ -89,13 +136,13 @@ public class CertificateService {
     public void addCertificateTag(TagDto tagDto, long certificateId) {
         Certificate certificate = certificateDao.find(certificateId)
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
-                                + certificateId + " doesn't exist"));
+                        + certificateId + " doesn't exist"));
         Tag tag = modelMapper.map(tagDto, Tag.class);
         Tag tagToAdd = tagDao.findByName(tag.getName()).orElseGet(() -> {
             tagDao.create(tag);
             return tag;
         });
-        if(certificate.getTags().contains(tagToAdd)) {
+        if (certificate.getTags().contains(tagToAdd)) {
             throw new ServiceConflictException("The certificate already has this tag");
         } else {
             certificate.getTags().add(tagToAdd);
@@ -105,10 +152,10 @@ public class CertificateService {
 
     public void deleteCertificateTag(long certificateId, long tagId) {
         Certificate certificate = certificateDao.find(certificateId)
-                .orElseThrow(()-> new CertificateNotFoundException("Certificate with id "
-                                + certificateId + " doesn't exist"));
+                .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
+                        + certificateId + " doesn't exist"));
         List<Tag> certificateTags = certificate.getTags();
-        if(certificateTags.stream().anyMatch(tag -> tag.getId() == tagId)) {
+        if (certificateTags.stream().anyMatch(tag -> tag.getId() == tagId)) {
             certificateTags.removeIf(tag -> tag.getId() == tagId);
         }
         certificateDao.update(certificate);

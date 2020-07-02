@@ -44,7 +44,7 @@ public class CertificateDto {
     @NonNull
     @Min(1)
     @Max(100)
-    private int duration;
+    private Integer duration;
     @NonNull
     @NotNull
     private List<String> tags;

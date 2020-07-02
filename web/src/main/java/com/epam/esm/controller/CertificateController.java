@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class CertificateController for Rest Api Basics Task.
@@ -120,6 +121,11 @@ public class CertificateController {
         certificateService.update(certificate);
     }
 
+    @PatchMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void patch(@PathVariable("id") long id, @RequestBody CertificateDto certificateDto) {
+        certificateService.patch(id, certificateDto);
+    }
     /**
      * DELETE method, which used to delete existent certificate, and all<br>
      * relations to tags, connected with it.<br>
