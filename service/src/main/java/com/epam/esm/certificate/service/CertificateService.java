@@ -20,10 +20,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -124,10 +121,13 @@ public class CertificateService {
         }
     }
 
-    public List<CertificateDto> findCertificates(String tagName, String textPart, String orderBy,
+    public List<CertificateDto> findCertificates(String[] tagNames, String textPart, String orderBy,
                                                  int page, int perPage) {
-
-        return certificateDao.findCertificates(tagName, textPart, orderBy, page, perPage).stream()
+        List<String> tags;
+        if(tagNames != null) {
+            tags = Arrays.asList(tagNames);
+        } else tags = Collections.emptyList();
+        return certificateDao.findCertificates(tags, textPart, orderBy, page, perPage).stream()
                 .map(certificate -> modelMapper.map(certificate, CertificateDto.class))
                 .collect(Collectors.toList());
     }

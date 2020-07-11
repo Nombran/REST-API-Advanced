@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -84,7 +85,7 @@ public class TagController {
      */
     @GetMapping(value = "/{id}")
     public TagDto findById(@PathVariable("id") long id) {
-        return tagService.find(id);
+        return tagService.find(id).add(linkTo(methodOn(TagController.class).findById(id)).withSelfRel());
     }
 
     /**
@@ -102,5 +103,10 @@ public class TagController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") long id) {
         tagService.delete(id);
+    }
+
+    @GetMapping(value = "/most-widely-tag")
+    public TagDto GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders() {
+        return tagService.GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders();
     }
 }

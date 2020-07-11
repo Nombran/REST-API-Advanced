@@ -78,4 +78,10 @@ public class TagService {
             throw new TagNotFoundException("There is no certificate with id = " + id);
         }
     }
+
+    public TagDto GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders() {
+        Tag tag = tagDao.GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders().orElseThrow(()->
+                new TagNotFoundException("Cannot find tag. Not enough data."));
+        return modelMapper.map(tag, TagDto.class);
+    }
 }

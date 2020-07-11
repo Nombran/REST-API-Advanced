@@ -1,5 +1,6 @@
 package com.epam.esm.certificate.model;
 
+import com.epam.esm.order.model.Order;
 import com.epam.esm.tag.model.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +25,7 @@ import java.util.List;
 @Table(name = "certificate")
 public class Certificate {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @NonNull
     @Column(name = "name", unique = true)

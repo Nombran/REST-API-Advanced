@@ -2,6 +2,7 @@ package com.epam.esm.tag.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.Column;
 import javax.validation.constraints.Size;
@@ -13,7 +14,7 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class TagDto {
+public class TagDto extends RepresentationModel<TagDto> {
     private long id;
     @NonNull
     @Size(min = 3,max = 50)

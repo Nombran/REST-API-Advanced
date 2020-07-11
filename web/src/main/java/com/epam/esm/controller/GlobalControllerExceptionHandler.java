@@ -2,7 +2,10 @@ package com.epam.esm.controller;
 
 import com.epam.esm.certificate.exception.CertificateNotFoundException;
 import com.epam.esm.exception.ServiceConflictException;
+import com.epam.esm.order.exception.OrderNotFoundException;
 import com.epam.esm.tag.exception.TagNotFoundException;
+import com.epam.esm.user.exception.UserNotFoundException;
+import org.modelmapper.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -31,6 +34,17 @@ public class GlobalControllerExceptionHandler {
         error.setStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
         error.setError(HttpStatus.UNSUPPORTED_MEDIA_TYPE.toString());
         error.setMessage(ex.getMessage());
+        return error;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MappingException.class)
+    public CustomErrorResponse handleMappingException(MappingException ex) {
+        CustomErrorResponse error = new CustomErrorResponse();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setError(HttpStatus.BAD_REQUEST.toString());
+        error.setMessage(ex.getCause().getMessage());
         return error;
     }
 
@@ -76,7 +90,9 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({CertificateNotFoundException.class,
             NoHandlerFoundException.class,
-            TagNotFoundException.class
+            TagNotFoundException.class,
+            UserNotFoundException.class,
+            OrderNotFoundException.class
     })
     public CustomErrorResponse handleResourceNotFound(Exception ex) {
         CustomErrorResponse error = new CustomErrorResponse();

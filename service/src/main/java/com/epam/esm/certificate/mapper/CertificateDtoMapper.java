@@ -59,7 +59,9 @@ public class CertificateDtoMapper{
     }
 
     public void mapSpecificFields(CertificateDto source, Certificate destination) {
-        List<String> tagsAsString = source.getTags();
+        List<String> tagsAsString = source.getTags().stream()
+                .distinct()
+                .collect(Collectors.toList());
         List<Tag> tagsAsObjects = tagsAsString.stream()
                 .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
                 .collect(Collectors.toList());

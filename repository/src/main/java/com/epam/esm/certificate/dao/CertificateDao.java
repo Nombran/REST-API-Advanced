@@ -2,7 +2,7 @@ package com.epam.esm.certificate.dao;
 
 import com.epam.esm.certificate.model.Certificate;
 import com.epam.esm.certificate.model.Certificate_;
-import com.epam.esm.certificate.specification.OrderBy;
+import com.epam.esm.certificate.specification.CertificateOrderBy;
 import com.epam.esm.tag.model.Tag;
 import com.epam.esm.tag.model.Tag_;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +61,7 @@ public class CertificateDao {
         return query.getResultList();
     }
 
-    public List<Certificate> findCertificates(String tagName, String textPart, String orderBy,
+    public List<Certificate> findCertificates(List<String> tagNames, String textPart, String orderBy,
                                               Integer page, Integer perPage) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
@@ -76,19 +76,26 @@ public class CertificateDao {
             predicates.add(textPartPredicate);
         }
 
-        if(Stream.of(OrderBy.values()).anyMatch(value ->
+        if(Stream.of(CertificateOrderBy.values()).anyMatch(value ->
                 value.getOrderByFieldName().equals(orderBy))) {
             query.orderBy(cb.asc(root.get(orderBy)));
         }
 
-        if(tagName != null && !tagName.isEmpty()) {
-            Metamodel m = em.getMetamodel();
-            Join<Certificate, Tag> tagJoin = root.join(Certificate_.tags);
-            Predicate tagNamePredicate = cb.equal(tagJoin.get(Tag_.NAME), tagName);
-            predicates.add(tagNamePredicate);
+        if(tagNames != null && tagNames.size() != 0) {
+            ListJoin<Certificate, Tag> tagJoin = root.join(Certificate_.tags);
+            Expression<List<Tag>> certificateTags = root.get(Certificate_.tags);
+            Expression<Integer> countOfCertificateTags = cb.size(certificateTags);
+            Expression<Long> countOfCertificateTagsInGroup = cb.count(root);
+            Predicate predicateCountOfCertificateTagsEqualsInputListSize =cb.equal(countOfCertificateTags, tagNames.size());
+            Predicate predicateCertificateTagsInInputList = tagJoin.get(Tag_.NAME).in(tagNames);
+            predicates.add(predicateCountOfCertificateTagsEqualsInputListSize);
+            predicates.add(predicateCertificateTagsInInputList);
+            query.where(cb.and(predicates.toArray(new Predicate[0])))
+                    .groupBy(root)
+                    .having(cb.equal(countOfCertificateTagsInGroup,tagNames.size()));
+        } else {
+            query.where(cb.and(predicates.toArray(new Predicate[0])));
         }
-
-        query.where(cb.and(predicates.toArray(new Predicate[0])));
 
         return em.createQuery(query)
                 .setFirstResult((page-1) * perPage)

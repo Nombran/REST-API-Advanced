@@ -16,7 +16,7 @@ import java.util.List;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @Column(name = "first_name")
     private String firstName;
@@ -26,9 +26,9 @@ public class User {
     private String login;
     @Column(name = "password")
     private String password;
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(fetch = FetchType.LAZY,mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,mappedBy = "user")
     private List<Order> orders;
 }

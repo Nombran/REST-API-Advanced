@@ -18,7 +18,7 @@ import java.util.List;
 @Table(name = "orders")
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @Column(name = "purchase_date")
     private LocalDateTime purchaseDate;
@@ -29,7 +29,7 @@ public class Order {
     private User user;
     @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(name = "order_certificate",
-            joinColumns = {@JoinColumn(name = "order_id", nullable = false)},
-            inverseJoinColumns = {@JoinColumn(name = "certificate_id", nullable = false)})
+            joinColumns = {@JoinColumn(name = "order_id")},
+            inverseJoinColumns = {@JoinColumn(name = "certificate_id")})
     private List<Certificate> certificates;
 }

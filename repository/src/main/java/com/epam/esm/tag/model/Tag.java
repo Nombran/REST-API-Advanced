@@ -23,7 +23,7 @@ import java.util.List;
 @Table(name = "tag")
 public class Tag {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @NonNull
     @NotBlank

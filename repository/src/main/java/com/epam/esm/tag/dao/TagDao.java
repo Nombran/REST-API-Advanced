@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,6 +67,28 @@ public class TagDao {
         query.setParameter("tagId", id);
         Tag tag =  query.getSingleResult();
         return Optional.ofNullable(tag);
+    }
+
+    public Optional<Tag> GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders() {
+        Query query = em.createNativeQuery("select t.id , t.name from tag t\n" +
+                "                              inner join certificate_tag ct on t.id = ct.tag_id\n" +
+                "                              inner join certificate c on ct.certificate_id = c.id\n" +
+                "                              inner join order_certificate oc on c.id = oc.certificate_id\n" +
+                "                              inner join orders o on oc.order_id = o.id\n" +
+                "                              inner join users u on o.user_id = u.id\n" +
+                "where u.id = (select rm.l from (SELECT u.id l, SUM(o.total_price) SumPrice\n" +
+                "                                FROM users u\n" +
+                "                                         inner join orders o on u.id = o.user_id\n" +
+                "                                         inner join order_certificate on o.id = order_certificate.order_id\n" +
+                "                                         inner join certificate c on order_certificate.certificate_id = c.id\n" +
+                "                                GROUP BY u.id order by SumPrice desc limit 1) rm)  group by t.id order by count(t.id)\n" +
+                "    desc limit 1", Tag.class);
+        try {
+            Tag tag = (Tag) query.getSingleResult();
+            return Optional.ofNullable(tag);
+        } catch (NoResultException ex) {
+            return Optional.empty();
+        }
     }
 
 }
