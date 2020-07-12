@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.NonNull;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
@@ -20,9 +21,9 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @RequiredArgsConstructor
-public class CertificateDto {
+public class CertificateDto extends RepresentationModel<CertificateDto> {
     private long id;
     @NonNull
     @NotBlank
@@ -42,6 +43,7 @@ public class CertificateDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime modificationDate;
     @NonNull
+    @NotNull
     @Min(1)
     @Max(100)
     private Integer duration;

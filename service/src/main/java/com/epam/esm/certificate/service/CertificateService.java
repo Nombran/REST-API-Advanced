@@ -12,6 +12,7 @@ import com.epam.esm.tag.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +39,11 @@ public class CertificateService {
         this.modelMapper = modelMapper;
     }
 
-    public void create(CertificateDto certificateDto) {
+    public CertificateDto create(CertificateDto certificateDto) {
         Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
         try {
             certificateDao.create(certificate);
+            return modelMapper.map(certificate, CertificateDto.class);
         } catch (DataIntegrityViolationException e) {
             log.error("Certificate with name " + certificate.getName() +
                     " already exists");
@@ -121,17 +123,21 @@ public class CertificateService {
         }
     }
 
-    public List<CertificateDto> findCertificates(String[] tagNames, String textPart, String orderBy,
+    public PagedModel<CertificateDto> findCertificates(String[] tagNames, String textPart, String orderBy,
                                                  int page, int perPage) {
         List<String> tags;
         if(tagNames != null) {
             tags = Arrays.asList(tagNames);
         } else tags = Collections.emptyList();
-        return certificateDao.findCertificates(tags, textPart, orderBy, page, perPage).stream()
+        List<CertificateDto> resultList =  certificateDao.findCertificates(tags, textPart, orderBy, page, perPage)
+                .stream()
                 .map(certificate -> modelMapper.map(certificate, CertificateDto.class))
                 .collect(Collectors.toList());
+        int totalElements = certificateDao.getTotalElementsCountFromCertificateSearch(tags, textPart)
+                .intValue();
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, totalElements);
+        return PagedModel.of(resultList, pageMetadata);
     }
-
 
     public void addCertificateTag(TagDto tagDto, long certificateId) {
         Certificate certificate = certificateDao.find(certificateId)

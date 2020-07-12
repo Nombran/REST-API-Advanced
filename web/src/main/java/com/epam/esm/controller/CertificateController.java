@@ -2,10 +2,14 @@ package com.epam.esm.controller;
 
 import com.epam.esm.certificate.dto.CertificateDto;
 import com.epam.esm.certificate.service.CertificateService;
+import com.epam.esm.hateoasutils.CertificateHATEOASUtil;
+import com.epam.esm.hateoasutils.TagHATEOASUtil;
 import com.epam.esm.tag.dto.TagDto;
 import com.epam.esm.tag.service.TagService;
 import com.epam.esm.tag.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Class CertificateController for Rest Api Basics Task.
@@ -40,11 +48,19 @@ public class CertificateController {
      */
     private final TagService tagService;
 
+    private final CertificateHATEOASUtil certificateHATEOASUtil;
+
+    private final TagHATEOASUtil tagHATEOASUtil;
+
     @Autowired
     public CertificateController(CertificateService certificateService,
-                                 TagService tagService) {
+                                 TagService tagService,
+                                 CertificateHATEOASUtil certificateHATEOASUtil,
+                                 TagHATEOASUtil tagHATEOASUtil) {
         this.certificateService = certificateService;
         this.tagService = tagService;
+        this.certificateHATEOASUtil = certificateHATEOASUtil;
+        this.tagHATEOASUtil = tagHATEOASUtil;
     }
 
     /**
@@ -56,29 +72,32 @@ public class CertificateController {
      * Response 200 (application/json).
      * </p>
      *
-     * @param tagName         represents tag's name, connected with certificate
+     * @param t        represents tag's name, connected with certificate
      * @param textPart represents part of full certificate's description
-     * @param orderBy         represents field name for ordering by
+     * @param orderBy  represents field name for ordering by
      * @return list of certificatesDto objects, which match to all request params
      * @see CertificateDto
      * @see com.epam.esm.certificate.model.Certificate
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<CertificateDto> findCertificates(@RequestParam(name = "tagNames", required = false)
-                                                         String[] tagNames,
-                                                 @RequestParam(name = "textPart", required = false)
-                                                         String textPart,
-                                                 @RequestParam(name = "orderBy", required = false, defaultValue = "id")
-                                                         String orderBy,
-                                                 @RequestParam(name = "page", required = false, defaultValue = "1")
-                                                 @Min(value = 1, message = "page number must be greater or equal to 1")
-                                                         Integer page,
-                                                 @RequestParam(name = "perPage", required = false, defaultValue = "50")
-                                                 @Min(value = 1, message = "perPage param must be greater or equal to 1")
-                                                         Integer perPage
+    public PagedModel<CertificateDto> findCertificates(@RequestParam(name = "tagNames", required = false)
+                                                               String[] tagNames,
+                                                       @RequestParam(name = "textPart", required = false)
+                                                               String textPart,
+                                                       @RequestParam(name = "orderBy", required = false, defaultValue = "id")
+                                                               String orderBy,
+                                                       @RequestParam(name = "page", required = false, defaultValue = "1")
+                                                       @Min(value = 1, message = "page number must be greater or equal to 1")
+                                                               Integer page,
+                                                       @RequestParam(name = "perPage", required = false, defaultValue = "50")
+                                                       @Min(value = 1, message = "perPage param must be greater or equal to 1")
+                                                               Integer perPage
     ) {
-        return certificateService.findCertificates(tagNames, textPart, orderBy, page, perPage);
+        PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(tagNames, textPart,
+                orderBy, page, perPage);
+        certificateHATEOASUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
+        return pagedModel;
     }
 
     /**
@@ -96,8 +115,9 @@ public class CertificateController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody CertificateDto certificate) {
-        certificateService.create(certificate);
+    public CertificateDto create(@Valid @RequestBody CertificateDto certificate) {
+        CertificateDto certificateDto = certificateService.create(certificate);
+        return certificateHATEOASUtil.createSelfRelLink(certificateDto);
     }
 
     /**
@@ -126,6 +146,7 @@ public class CertificateController {
     public void patch(@PathVariable("id") long id, @RequestBody CertificateDto certificateDto) {
         certificateService.patch(id, certificateDto);
     }
+
     /**
      * DELETE method, which used to delete existent certificate, and all<br>
      * relations to tags, connected with it.<br>
@@ -160,7 +181,7 @@ public class CertificateController {
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CertificateDto findById(@PathVariable("id") long id) {
-        return certificateService.find(id);
+        return certificateHATEOASUtil.createSelfRelLink(certificateService.find(id));
     }
 
     /**
@@ -177,8 +198,10 @@ public class CertificateController {
      */
     @GetMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.OK)
-    public List<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
-        return tagService.findTagsByCertificateId(id);
+    public CollectionModel<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
+       CollectionModel<TagDto> tags =  CollectionModel.of(tagService.findTagsByCertificateId(id));
+       tagHATEOASUtil.createCertificateTagsLinks(tags,id);
+       return tags;
     }
 
     /**

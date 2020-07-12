@@ -14,7 +14,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import javax.persistence.metamodel.Metamodel;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +34,9 @@ public class CertificateDao {
 
 
     public void create(Certificate certificate) {
-            LocalDateTime creationDate = LocalDateTime.now();
-            certificate.setCreationDate(creationDate);
-            em.persist(certificate);
+        LocalDateTime creationDate = LocalDateTime.now();
+        certificate.setCreationDate(creationDate);
+        em.persist(certificate);
     }
 
     public void update(Certificate certificate) {
@@ -51,14 +50,7 @@ public class CertificateDao {
     }
 
     public Optional<Certificate> find(long id) {
-        return Optional.ofNullable(em.find(Certificate.class,id));
-    }
-
-    public List<Certificate> findAll() {
-        TypedQuery<Certificate> query = em.createQuery(
-                "select c from Certificate c",
-                Certificate.class);
-        return query.getResultList();
+        return Optional.ofNullable(em.find(Certificate.class, id));
     }
 
     public List<Certificate> findCertificates(List<String> tagNames, String textPart, String orderBy,
@@ -67,39 +59,54 @@ public class CertificateDao {
         CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
         Root<Certificate> root = query.from(Certificate.class);
         query.select(root);
+
+        prepareSearchQuery(query, root, tagNames, textPart);
+
+        if (Stream.of(CertificateOrderBy.values()).anyMatch(value ->
+                value.getOrderByFieldName().equals(orderBy))) {
+            query.orderBy(cb.asc(root.get(orderBy)));
+        }
+
+        return em.createQuery(query)
+                .setFirstResult((page - 1) * perPage)
+                .setMaxResults(perPage)
+                .getResultList();
+    }
+
+    public Long getTotalElementsCountFromCertificateSearch(List<String> tagNames, String textPart) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<Certificate> root = query.from(Certificate.class);
+        query.select(cb.count(root));
+
+        prepareSearchQuery(query, root, tagNames, textPart);
+
+        return em.createQuery(query)
+                .getSingleResult();
+    }
+
+    public <X> void prepareSearchQuery(CriteriaQuery<X> query, Root<Certificate> root,
+                                       List<String> tagNames, String textPart) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
         List<Predicate> predicates = new ArrayList<>();
 
-        if(textPart != null && !textPart.isEmpty()) {
+        if (textPart != null && !textPart.isEmpty()) {
             Predicate predicateForName = cb.like(root.get(Certificate_.NAME), "%" + textPart + "%");
             Predicate predicateForDescription = cb.like(root.get(Certificate_.description), "%" + textPart + "%");
             Predicate textPartPredicate = cb.or(predicateForName, predicateForDescription);
             predicates.add(textPartPredicate);
         }
 
-        if(Stream.of(CertificateOrderBy.values()).anyMatch(value ->
-                value.getOrderByFieldName().equals(orderBy))) {
-            query.orderBy(cb.asc(root.get(orderBy)));
-        }
-
-        if(tagNames != null && tagNames.size() != 0) {
+        if (tagNames != null && tagNames.size() != 0) {
             ListJoin<Certificate, Tag> tagJoin = root.join(Certificate_.tags);
-            Expression<List<Tag>> certificateTags = root.get(Certificate_.tags);
-            Expression<Integer> countOfCertificateTags = cb.size(certificateTags);
             Expression<Long> countOfCertificateTagsInGroup = cb.count(root);
-            Predicate predicateCountOfCertificateTagsEqualsInputListSize =cb.equal(countOfCertificateTags, tagNames.size());
             Predicate predicateCertificateTagsInInputList = tagJoin.get(Tag_.NAME).in(tagNames);
-            predicates.add(predicateCountOfCertificateTagsEqualsInputListSize);
             predicates.add(predicateCertificateTagsInInputList);
             query.where(cb.and(predicates.toArray(new Predicate[0])))
-                    .groupBy(root)
-                    .having(cb.equal(countOfCertificateTagsInGroup,tagNames.size()));
+                    .having(cb.equal(countOfCertificateTagsInGroup, tagNames.size()));
         } else {
             query.where(cb.and(predicates.toArray(new Predicate[0])));
         }
 
-        return em.createQuery(query)
-                .setFirstResult((page-1) * perPage)
-                .setMaxResults(perPage)
-                .getResultList();
     }
 }
