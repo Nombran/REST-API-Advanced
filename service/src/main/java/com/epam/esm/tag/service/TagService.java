@@ -9,6 +9,7 @@ import com.epam.esm.tag.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,10 +31,12 @@ public class TagService {
         this.modelMapper = modelMapper;
     }
 
-    public void create(TagDto tagDto) {
+    public TagDto create(TagDto tagDto) {
         Tag tag = modelMapper.map(tagDto, Tag.class);
         try {
             tagDao.create(tag);
+            tagDto.setId(tag.getId());
+            return tagDto;
         } catch (DataIntegrityViolationException e) {
             log.error("Tag with name " + tag.getName() + "already exists");
             throw new ServiceConflictException("Tag with name " + tag.getName() + " already exists");
@@ -63,10 +66,11 @@ public class TagService {
         }
     }
 
-    public List<TagDto> findAll() {
-        return tagDao.findAll().stream()
+    public PagedModel<TagDto> findTags(Integer page, Integer perPage) {
+        List<TagDto> tags = tagDao.findTags(page, perPage).stream()
                 .map(tag -> modelMapper.map(tag,TagDto.class))
                 .collect(Collectors.toList());
+        return PagedModel.of(tags, new PagedModel.PageMetadata(perPage,page,tagDao.getCountOfTags()));
     }
 
     public List<TagDto> findTagsByCertificateId(long id) {

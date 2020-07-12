@@ -4,8 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.Column;
 import javax.validation.constraints.Size;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
@@ -13,7 +17,7 @@ import javax.validation.constraints.Size;
 @RequiredArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class TagDto extends RepresentationModel<TagDto> {
     private long id;
     @NonNull

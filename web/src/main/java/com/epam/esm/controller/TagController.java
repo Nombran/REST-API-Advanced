@@ -1,22 +1,17 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.hateoasutils.TagHATEOASUtil;
 import com.epam.esm.tag.dto.TagDto;
 import com.epam.esm.tag.model.Tag;
 import com.epam.esm.tag.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
+import javax.validation.constraints.Min;
 
 /**
  * Class TagController for Rest Api Basics Task.
@@ -24,6 +19,7 @@ import java.util.List;
  * @author ARTSIOM BERASTSEN
  * @version 1.0
  */
+@Validated
 @RestController
 @RequestMapping(value = "/api/v1/tags")
 public class TagController {
@@ -33,8 +29,12 @@ public class TagController {
      */
     private final TagService tagService;
 
+    private final TagHATEOASUtil tagHateoasUtil;
+
     @Autowired
-    public TagController(TagService tagService) {
+    public TagController(TagService tagService,
+                         TagHATEOASUtil tagHateoasUtil) {
+        this.tagHateoasUtil = tagHateoasUtil;
         this.tagService = tagService;
     }
 
@@ -51,8 +51,16 @@ public class TagController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<TagDto> findAll() {
-        return tagService.findAll();
+    public PagedModel<TagDto> findTags(@RequestParam(name = "page", required = false, defaultValue = "1")
+                                     @Min(value = 1, message = "page number must be greater or equal to 1")
+                                             Integer page,
+                                 @RequestParam(name = "perPage", required = false, defaultValue = "50")
+                                     @Min(value = 1, message = "perPage param must be greater or equal to 1")
+                                             Integer perPage) {
+        PagedModel<TagDto> model = tagService.findTags(page, perPage);
+        model.getContent().forEach(tagHateoasUtil::createSelfRel);
+        tagHateoasUtil.createPaginationLinks(model);
+        return model;
     }
 
     /**
@@ -64,12 +72,12 @@ public class TagController {
      * </p>
      *
      * @param tag represents tag object
-     * @see Tag
+     * see Tag
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody TagDto tag) {
-        tagService.create(tag);
+    public TagDto create(@Valid @RequestBody TagDto tag) {
+        return tagHateoasUtil.createSingleTagLinks(tagService.create(tag));
     }
 
     /**
@@ -85,7 +93,7 @@ public class TagController {
      */
     @GetMapping(value = "/{id}")
     public TagDto findById(@PathVariable("id") long id) {
-        return tagService.find(id).add(linkTo(methodOn(TagController.class).findById(id)).withSelfRel());
+        return tagHateoasUtil.createSingleTagLinks(tagService.find(id));
     }
 
     /**
@@ -107,6 +115,7 @@ public class TagController {
 
     @GetMapping(value = "/most-widely-tag")
     public TagDto GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders() {
-        return tagService.GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders();
+        return tagHateoasUtil.createSingleTagLinks(
+                tagService.GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders());
     }
 }

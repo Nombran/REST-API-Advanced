@@ -1,5 +1,6 @@
 package com.epam.esm.tag.dao;
 
+import com.epam.esm.certificate.model.Certificate;
 import com.epam.esm.tag.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,9 +39,15 @@ public class TagDao {
         return Optional.ofNullable(em.find(Tag.class, id));
     }
 
-    public List<Tag> findAll() {
-        TypedQuery<Tag> query = em.createQuery("Select t from Tag t", Tag.class);
-        return query.getResultList();
+    public List<Tag> findTags(Integer page, Integer perPage) {
+        return em.createQuery("select t from Tag t", Tag.class)
+                .setFirstResult((page-1) * perPage)
+                .setMaxResults(perPage)
+                .getResultList();
+    }
+
+    public long getCountOfTags() {
+        return em.createQuery("select count(t) from Tag t",Long.class).getSingleResult();
     }
 
     public List<Tag> findByCertificateId(long id) {
