@@ -8,11 +8,9 @@ import com.epam.esm.tag.model.Tag_;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,7 +20,6 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Repository
-@Transactional
 public class CertificateDao {
     @PersistenceContext
     private final EntityManager em;

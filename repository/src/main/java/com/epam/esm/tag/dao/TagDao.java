@@ -1,23 +1,17 @@
 package com.epam.esm.tag.dao;
 
-import com.epam.esm.certificate.model.Certificate;
 import com.epam.esm.tag.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Repository
-@Transactional
 public class TagDao {
     @PersistenceContext
     private final EntityManager em;
@@ -79,7 +73,7 @@ public class TagDao {
         return Optional.ofNullable(tag);
     }
 
-    public Optional<Tag> GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders() {
+    public Optional<Tag> GetValuedUsersMostPopularTag() {
         Query query = em.createNativeQuery("select t.id , t.name from tag t\n" +
                 "                              inner join certificate_tag ct on t.id = ct.tag_id\n" +
                 "                              inner join certificate c on ct.certificate_id = c.id\n" +

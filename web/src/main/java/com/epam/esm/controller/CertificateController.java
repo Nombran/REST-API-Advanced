@@ -2,26 +2,21 @@ package com.epam.esm.controller;
 
 import com.epam.esm.certificate.dto.CertificateDto;
 import com.epam.esm.certificate.service.CertificateService;
-import com.epam.esm.hateoasutils.CertificateHATEOASUtil;
-import com.epam.esm.hateoasutils.TagHATEOASUtil;
+import com.epam.esm.hateoasutils.CertificateHateoasUtil;
+import com.epam.esm.hateoasutils.TagHateoasUtil;
 import com.epam.esm.tag.dto.TagDto;
-import com.epam.esm.tag.service.TagService;
 import com.epam.esm.tag.model.Tag;
+import com.epam.esm.tag.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Class CertificateController for Rest Api Basics Task.
@@ -48,15 +43,15 @@ public class CertificateController {
      */
     private final TagService tagService;
 
-    private final CertificateHATEOASUtil certificateHATEOASUtil;
+    private final CertificateHateoasUtil certificateHATEOASUtil;
 
-    private final TagHATEOASUtil tagHATEOASUtil;
+    private final TagHateoasUtil tagHATEOASUtil;
 
     @Autowired
     public CertificateController(CertificateService certificateService,
                                  TagService tagService,
-                                 CertificateHATEOASUtil certificateHATEOASUtil,
-                                 TagHATEOASUtil tagHATEOASUtil) {
+                                 CertificateHateoasUtil certificateHATEOASUtil,
+                                 TagHateoasUtil tagHATEOASUtil) {
         this.certificateService = certificateService;
         this.tagService = tagService;
         this.certificateHATEOASUtil = certificateHATEOASUtil;
@@ -81,6 +76,7 @@ public class CertificateController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @Secured(value = "ROLE_USER")
     public PagedModel<CertificateDto> findCertificates(@RequestParam(name = "tagNames", required = false)
                                                                String[] tagNames,
                                                        @RequestParam(name = "textPart", required = false)

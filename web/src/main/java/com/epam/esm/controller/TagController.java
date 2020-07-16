@@ -1,6 +1,6 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.hateoasutils.TagHATEOASUtil;
+import com.epam.esm.hateoasutils.TagHateoasUtil;
 import com.epam.esm.tag.dto.TagDto;
 import com.epam.esm.tag.model.Tag;
 import com.epam.esm.tag.service.TagService;
@@ -29,11 +29,11 @@ public class TagController {
      */
     private final TagService tagService;
 
-    private final TagHATEOASUtil tagHateoasUtil;
+    private final TagHateoasUtil tagHateoasUtil;
 
     @Autowired
     public TagController(TagService tagService,
-                         TagHATEOASUtil tagHateoasUtil) {
+                         TagHateoasUtil tagHateoasUtil) {
         this.tagHateoasUtil = tagHateoasUtil;
         this.tagService = tagService;
     }
@@ -114,8 +114,8 @@ public class TagController {
     }
 
     @GetMapping(value = "/most-widely-tag")
-    public TagDto GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders() {
+    public TagDto GetValuedUsersMostPopularTag() {
         return tagHateoasUtil.createSingleTagLinks(
-                tagService.GetMostWidelyUsedTagOfAUserWithTheHighestCostOfAllOrders());
+                tagService.GetValuedUsersMostPopularTag());
     }
 }

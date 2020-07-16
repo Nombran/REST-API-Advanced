@@ -1,15 +1,12 @@
 package com.epam.esm.user.dto;
 
-import com.epam.esm.order.model.Order;
-import com.epam.esm.user.model.Role;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
@@ -17,8 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-public class UserDto {
+@EqualsAndHashCode(callSuper = false)
+public class UserDto extends RepresentationModel<UserDto> {
     private long id;
     @NonNull
     @NotBlank

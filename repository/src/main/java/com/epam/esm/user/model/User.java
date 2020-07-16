@@ -29,6 +29,6 @@ public class User {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,mappedBy = "user")
+    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "user")
     private List<Order> orders;
 }

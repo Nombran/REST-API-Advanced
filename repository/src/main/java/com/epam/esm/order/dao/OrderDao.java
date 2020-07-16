@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 @Slf4j
 public class OrderDao {
     @PersistenceContext
@@ -43,11 +42,21 @@ public class OrderDao {
         return Optional.ofNullable(em.find(Order.class, id));
     }
 
-    public List<Order> getOrdersByUserId(long userId) {
+    public List<Order> getOrdersByUserId(long userId, int page, int perPage) {
         TypedQuery<Order> query = em.createQuery("select o from Order o where o.user.id =: id",
                 Order.class);
         query.setParameter("id", userId);
-        return query.getResultList();
+        return query
+                .setFirstResult((page-1) * perPage)
+                .setMaxResults(perPage)
+                .getResultList();
+    }
+
+    public Long getCountOfUsersOrders(long userId) {
+        TypedQuery<Long> query = em.createQuery("select count(o) from Order o where o.user.id =: id",
+                Long.class);
+        query.setParameter("id", userId);
+        return query.getSingleResult();
     }
 
     public Optional<Order> findOrderByUserIdAndOrderId(long userId, long orderId) {

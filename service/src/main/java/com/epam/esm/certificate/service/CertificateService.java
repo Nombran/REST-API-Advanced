@@ -7,11 +7,9 @@ import com.epam.esm.certificate.model.Certificate;
 import com.epam.esm.exception.ServiceConflictException;
 import com.epam.esm.tag.dao.TagDao;
 import com.epam.esm.tag.dto.TagDto;
-import com.epam.esm.tag.exception.TagNotFoundException;
 import com.epam.esm.tag.model.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional
 public class CertificateService {
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
@@ -41,15 +40,8 @@ public class CertificateService {
 
     public CertificateDto create(CertificateDto certificateDto) {
         Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
-        try {
-            certificateDao.create(certificate);
-            return modelMapper.map(certificate, CertificateDto.class);
-        } catch (DataIntegrityViolationException e) {
-            log.error("Certificate with name " + certificate.getName() +
-                    " already exists");
-            throw new ServiceConflictException("Certificate with name "
-                    + certificate.getName() + " already exists");
-        }
+        certificateDao.create(certificate);
+        return modelMapper.map(certificate, CertificateDto.class);
     }
 
     public void update(CertificateDto certificateDto) {
@@ -59,14 +51,7 @@ public class CertificateService {
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
                         + certificate.getId() + " doesn't exist"));
         certificate.setCreationDate(beforeUpdate.getCreationDate());
-        try {
-            certificateDao.update(certificate);
-        } catch (DataIntegrityViolationException e) {
-            log.error("Certificate with name " + certificate.getName() +
-                    " already exists");
-            throw new ServiceConflictException("Certificate with name "
-                    + certificate.getName() + " already exists");
-        }
+        certificateDao.update(certificate);
     }
 
     @Transactional
@@ -79,7 +64,7 @@ public class CertificateService {
 
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<CertificateDto>> violations = validator.validate(certificateDto);
-        if(!violations.isEmpty()) {
+        if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
         update(certificateDto);
@@ -91,19 +76,19 @@ public class CertificateService {
         BigDecimal newPrice = changes.getPrice();
         Integer newDuration = changes.getDuration();
         List<String> newTags = changes.getTags();
-        if(newName != null) {
+        if (newName != null) {
             certificate.setName(newName);
         }
-        if(newDescription != null) {
+        if (newDescription != null) {
             certificate.setDescription(newDescription);
         }
-        if(newPrice != null) {
+        if (newPrice != null) {
             certificate.setPrice(newPrice);
         }
-        if(newDuration != null) {
+        if (newDuration != null) {
             certificate.setDuration(newDuration);
         }
-        if(newTags != null) {
+        if (newTags != null) {
             certificate.setTags(newTags);
         }
     }
@@ -124,12 +109,12 @@ public class CertificateService {
     }
 
     public PagedModel<CertificateDto> findCertificates(String[] tagNames, String textPart, String orderBy,
-                                                 int page, int perPage) {
+                                                       int page, int perPage) {
         List<String> tags;
-        if(tagNames != null) {
+        if (tagNames != null) {
             tags = Arrays.asList(tagNames);
         } else tags = Collections.emptyList();
-        List<CertificateDto> resultList =  certificateDao.findCertificates(tags, textPart, orderBy, page, perPage)
+        List<CertificateDto> resultList = certificateDao.findCertificates(tags, textPart, orderBy, page, perPage)
                 .stream()
                 .map(certificate -> modelMapper.map(certificate, CertificateDto.class))
                 .collect(Collectors.toList());

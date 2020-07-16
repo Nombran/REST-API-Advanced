@@ -1,6 +1,5 @@
 package com.epam.esm.certificate.model;
 
-import com.epam.esm.order.model.Order;
 import com.epam.esm.tag.model.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

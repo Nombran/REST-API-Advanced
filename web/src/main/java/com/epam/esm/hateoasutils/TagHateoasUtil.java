@@ -11,7 +11,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
-public class TagHATEOASUtil {
+public class TagHateoasUtil {
 
     public void createPaginationLinks(PagedModel<TagDto> model) {
         PagedModel.PageMetadata metadata = model.getMetadata();
@@ -36,11 +36,10 @@ public class TagHATEOASUtil {
                 .withSelfRel());
     }
 
-    public TagDto createSelfRel(TagDto tagDto) {
+    public void createSelfRel(TagDto tagDto) {
         tagDto.add(linkTo(methodOn(TagController.class)
                 .findById(tagDto.getId()))
                 .withSelfRel());
-        return tagDto;
     }
 
     public TagDto createSingleTagLinks(TagDto tagDto) {

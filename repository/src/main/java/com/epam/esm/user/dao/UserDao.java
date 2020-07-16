@@ -2,13 +2,11 @@ package com.epam.esm.user.dao;
 
 import com.epam.esm.user.model.User;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.FlushModeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -19,7 +17,6 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-@Transactional
 public class UserDao {
     @PersistenceContext
     private final EntityManager em;
@@ -62,5 +59,24 @@ public class UserDao {
                 .setFirstResult((page-1) * perPage)
                 .setMaxResults(perPage)
                 .getResultList();
+    }
+
+    public Long findAllUserCount() {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<User> root = criteriaQuery.from(User.class);
+        criteriaQuery.select(criteriaBuilder.count(root));
+        return em.createQuery(criteriaQuery)
+                .getSingleResult();
+    }
+
+    public Optional<User> findUserByLogin(String login) {
+        TypedQuery<User> query = em.createQuery("select u from User u where u.login=:login",User.class);
+        query.setParameter("login", login);
+        try {
+            return Optional.ofNullable(query.getSingleResult());
+        } catch (NoResultException ex) {
+            return Optional.empty();
+        }
     }
 }

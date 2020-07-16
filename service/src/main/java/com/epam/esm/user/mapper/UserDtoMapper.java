@@ -1,7 +1,6 @@
 package com.epam.esm.user.mapper;
 
 import com.epam.esm.order.dao.OrderDao;
-import com.epam.esm.order.model.Order;
 import com.epam.esm.user.dto.UserDto;
 import com.epam.esm.user.model.Role;
 import com.epam.esm.user.model.User;
@@ -12,12 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 @Component
 public class UserDtoMapper {
     private final ModelMapper mapper;
-    private final OrderDao orderDao;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -25,7 +22,6 @@ public class UserDtoMapper {
                                 OrderDao orderDao,
                          PasswordEncoder passwordEncoder) {
         this.mapper = modelMapper;
-        this.orderDao = orderDao;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -60,15 +56,10 @@ public class UserDtoMapper {
     }
 
     public void mapSpecificFields(UserDto source, User destination) {
-        long userId = source.getId();
-        if(source.getId() != 0) {
-            List<Order> userOrders = orderDao.getOrdersByUserId(userId);
-            destination.setOrders(userOrders);
-        }
         String password = source.getPassword();
         if(password != null) {
             destination.setPassword(passwordEncoder.encode(password));
         }
-        destination.setRole(Role.USER);
+        destination.setRole(Role.ROLE_USER);
     }
 }

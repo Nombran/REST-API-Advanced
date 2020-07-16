@@ -8,6 +8,7 @@ import com.epam.esm.user.exception.UserNotFoundException;
 import org.modelmapper.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -104,12 +105,37 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(ServiceConflictException.class)
+    @ExceptionHandler({ServiceConflictException.class})
     public CustomErrorResponse handleServiceConflictException(ServiceConflictException ex) {
         CustomErrorResponse error = new CustomErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.CONFLICT.value());
         error.setError(HttpStatus.CONFLICT.toString());
+        error.setMessage(ex.getMessage());
+        return error;
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({org.hibernate.exception.ConstraintViolationException.class})
+    public CustomErrorResponse handleServiceConflictException(
+            org.hibernate.exception.ConstraintViolationException ex) {
+
+        CustomErrorResponse error = new CustomErrorResponse();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.CONFLICT.value());
+        error.setError(HttpStatus.CONFLICT.toString());
+        String message = ex.getCause().getLocalizedMessage();
+        error.setMessage(message.substring(message.indexOf("Detail")));
+        return error;
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(BadCredentialsException.class)
+    public CustomErrorResponse handleBadCredentialsException(BadCredentialsException ex) {
+        CustomErrorResponse error = new CustomErrorResponse();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.UNAUTHORIZED.value());
+        error.setError(HttpStatus.UNAUTHORIZED.toString());
         error.setMessage(ex.getMessage());
         return error;
     }

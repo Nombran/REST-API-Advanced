@@ -1,18 +1,15 @@
 package com.epam.esm.user.service;
 
-import com.epam.esm.certificate.dto.CertificateDto;
 import com.epam.esm.exception.ServiceConflictException;
 import com.epam.esm.user.dao.UserDao;
 import com.epam.esm.user.dto.UserDto;
 import com.epam.esm.user.exception.UserNotFoundException;
-import com.epam.esm.user.model.Role;
 import com.epam.esm.user.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class UserService {
     private final UserDao userDao;
     private final ModelMapper modelMapper;
@@ -33,24 +31,22 @@ public class UserService {
         this.userDao = userDao;
     }
 
-    public void create(UserDto userDto) {
-        userDto.setId(0);
-        User user = modelMapper.map(userDto, User.class);
-        try {
-            userDao.create(user);
-        } catch (DataIntegrityViolationException ex) {
-            log.error("User with login '" + user.getLogin() + "' already exists");
-            throw new ServiceConflictException("User with login '" + user.getLogin() + "' already exists");
-        }
+    public UserDto create(UserDto userDto) {
+            userDto.setId(0);
+            User user = modelMapper.map(userDto, User.class);
+                userDao.create(user);
+                return modelMapper.map(user, UserDto.class);
     }
 
-    public void update(UserDto userDto) {
-        if (!userDao.find(userDto.getId()).isPresent()) {
+    public UserDto update(UserDto userDto, long id) {
+        userDto.setId(id);
+        if (!userDao.find(id).isPresent()) {
             throw new UserNotFoundException("User with id " + userDto.getId() + " doesn't exist");
         }
         User user = modelMapper.map(userDto, User.class);
         try {
             userDao.update(user);
+            return modelMapper.map(user, UserDto.class);
         } catch (DataIntegrityViolationException ex) {
             log.error("User with login '" + user.getLogin() + "' already exists");
             throw new ServiceConflictException("User with login '" + user.getLogin() + "' already exists");
@@ -74,9 +70,12 @@ public class UserService {
         }
     }
 
-    public List<UserDto> findUsers(int page, int perPage) {
-        return userDao.findUsers(page, perPage).stream()
+    public PagedModel<UserDto> findUsers(int page, int perPage) {
+        List<UserDto> users = userDao.findUsers(page, perPage).stream()
                 .map(user -> modelMapper.map(user, UserDto.class))
                 .collect(Collectors.toList());
+        int totalUsersCount = userDao.findAllUserCount().intValue();
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, totalUsersCount);
+        return PagedModel.of(users, pageMetadata);
     }
 }

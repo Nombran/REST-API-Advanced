@@ -15,7 +15,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
-public class CertificateHATEOASUtil {
+public class CertificateHateoasUtil {
 
     public void createPaginationLinks(PagedModel<CertificateDto> model, String[] tagNames, String textPart,
                                       String orderBy) {
