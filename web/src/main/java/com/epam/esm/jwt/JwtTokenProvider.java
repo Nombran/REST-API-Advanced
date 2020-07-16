@@ -1,7 +1,7 @@
 package com.epam.esm.jwt;
 
 import com.epam.esm.security.JwtUserDetailsService;
-import com.epam.esm.user.model.Role;
+import com.epam.esm.user.Role;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

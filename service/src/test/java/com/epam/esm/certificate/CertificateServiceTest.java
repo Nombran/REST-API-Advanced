@@ -1,38 +1,6 @@
 package com.epam.esm.certificate;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-import com.epam.esm.certificate.dao.CertificateDao;
-import com.epam.esm.certificate.dto.CertificateDto;
-import com.epam.esm.certificate.exception.CertificateNotFoundException;
-import com.epam.esm.certificate.model.Certificate;
-import com.epam.esm.certificate.service.CertificateService;
-import com.epam.esm.exception.ServiceConflictException;
-import com.epam.esm.tag.dao.TagDao;
-import com.epam.esm.tag.exception.TagNotFoundException;
-import com.epam.esm.tag.model.Tag;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.modelmapper.ModelMapper;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CertificateServiceTest {
 //    @InjectMocks

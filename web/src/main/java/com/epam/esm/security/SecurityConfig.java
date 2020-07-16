@@ -1,6 +1,5 @@
 package com.epam.esm.security;
 
-import com.epam.esm.jwt.CustomAccessDeniedHandler;
 import com.epam.esm.jwt.JwtConfigurer;
 import com.epam.esm.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.access.AccessDeniedHandler;
 
 @Configuration
 @EnableGlobalMethodSecurity(
@@ -40,8 +38,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .httpBasic().disable()
                 .csrf().disable()
-                .exceptionHandling().accessDeniedHandler(accessDeniedHandler())
-                .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
@@ -49,10 +45,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider))
                 .and().cors();
-    }
-
-    @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return new CustomAccessDeniedHandler();
     }
 }
