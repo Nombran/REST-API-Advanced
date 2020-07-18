@@ -73,7 +73,6 @@ public class CertificateController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Secured(value = "ROLE_USER")
     public PagedModel<CertificateDto> findCertificates(@RequestParam(name = "tagNames", required = false)
                                                                String[] tagNames,
                                                        @RequestParam(name = "textPart", required = false)
@@ -108,6 +107,7 @@ public class CertificateController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Secured("ROLE_ADMIN")
     public CertificateDto create(@Valid @RequestBody CertificateDto certificate) {
         CertificateDto certificateDto = certificateService.create(certificate);
         return certificateHATEOASUtil.createSelfRelLink(certificateDto);
@@ -129,6 +129,7 @@ public class CertificateController {
      */
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @Secured("ROLE_ADMIN")
     public void update(@Valid @RequestBody CertificateDto certificate, @PathVariable("id") long id) {
         certificate.setId(id);
         certificateService.update(certificate);
@@ -136,6 +137,7 @@ public class CertificateController {
 
     @PatchMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @Secured("ROLE_ADMIN")
     public void patch(@PathVariable("id") long id, @RequestBody CertificateDto certificateDto) {
         certificateService.patch(id, certificateDto);
     }
@@ -154,6 +156,7 @@ public class CertificateController {
      */
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Secured("ROLE_ADMIN")
     public void delete(@PathVariable("id") long id) {
         certificateService.delete(id);
     }
@@ -191,6 +194,7 @@ public class CertificateController {
      */
     @GetMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER","ROLE_ADMIN"})
     public CollectionModel<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
        CollectionModel<TagDto> tags =  CollectionModel.of(tagService.findTagsByCertificateId(id));
        tagHATEOASUtil.createCertificateTagsLinks(tags,id);
@@ -211,6 +215,7 @@ public class CertificateController {
      */
     @PostMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.CREATED)
+    @Secured("ROLE_ADMIN")
     public void addTag(@PathVariable("id") long certificateId, @RequestBody TagDto tag) {
         certificateService.addCertificateTag(tag, certificateId);
     }
@@ -230,6 +235,7 @@ public class CertificateController {
      */
     @DeleteMapping(value = "/{id}/tags/{tagId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Secured("ROLE_ADMIN")
     public void deleteCertificateTag(@PathVariable("id") long certificateId,
                                      @PathVariable("tagId") long tagId) {
         certificateService.deleteCertificateTag(certificateId, tagId);

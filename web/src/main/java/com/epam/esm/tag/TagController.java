@@ -3,6 +3,7 @@ package com.epam.esm.tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,6 +48,7 @@ public class TagController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public PagedModel<TagDto> findTags(@RequestParam(name = "page", required = false, defaultValue = "1")
                                      @Min(value = 1, message = "page number must be greater or equal to 1")
                                              Integer page,
@@ -72,6 +74,7 @@ public class TagController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Secured("ROLE_ADMIN")
     public TagDto create(@Valid @RequestBody TagDto tag) {
         return tagHateoasUtil.createSingleTagLinks(tagService.create(tag));
     }
@@ -88,6 +91,7 @@ public class TagController {
      * @see Tag
      */
     @GetMapping(value = "/{id}")
+    @Secured({"ROLE_USER","ROLE_ADMIN"})
     public TagDto findById(@PathVariable("id") long id) {
         return tagHateoasUtil.createSingleTagLinks(tagService.find(id));
     }
@@ -105,11 +109,13 @@ public class TagController {
      */
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Secured("ROLE_ADMIN")
     public void delete(@PathVariable("id") long id) {
         tagService.delete(id);
     }
 
     @GetMapping(value = "/most-widely-tag")
+    @Secured({"ROLE_USER","ROLE_ADMIN"})
     public TagDto GetValuedUsersMostPopularTag() {
         return tagHateoasUtil.createSingleTagLinks(
                 tagService.GetValuedUsersMostPopularTag());

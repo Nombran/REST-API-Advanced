@@ -20,6 +20,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String LOGIN_ENDPOINT = "/api/v1/auth/login";
+    private static final String SIGN_UP_ENDPOINT = "/api/v1/users";
+    private static final String FIND_CERTIFICATES_ENDPOINT = "/api/v1/certificates";
+    private static final String FIND_CERTIFICATE_BY_ID = "/api/v1/certificates/{\\d+}";
+
     private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
@@ -41,7 +45,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST,LOGIN_ENDPOINT).permitAll()
+                .antMatchers(HttpMethod.POST,LOGIN_ENDPOINT).anonymous()
+                .antMatchers(HttpMethod.POST, SIGN_UP_ENDPOINT).anonymous()
+                .antMatchers(HttpMethod.GET, FIND_CERTIFICATES_ENDPOINT).permitAll()
+                .antMatchers(HttpMethod.GET, FIND_CERTIFICATE_BY_ID).permitAll()
+                .anyRequest().fullyAuthenticated()
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider))
                 .and().cors();

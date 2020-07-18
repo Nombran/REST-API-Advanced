@@ -6,6 +6,8 @@ import com.epam.esm.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,7 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @Secured("ROLE_ADMIN")
     public PagedModel<UserDto> findUsers(@RequestParam(name = "page", required = false, defaultValue = "1")
                               @Min(value = 1, message = "page number must be greater or equal to 1")
                                       Integer page,
@@ -52,6 +55,7 @@ public class UserController {
         return userHateoasUtil.createSingleUserLinks(created);
     }
 
+    @PreAuthorize("authentication.principal.id == #id")
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public UserDto update(@Valid @RequestBody UserDto userDto, @PathVariable("id") long id) {
@@ -59,19 +63,15 @@ public class UserController {
         return userHateoasUtil.createSingleUserLinks(updated);
     }
 
-    @DeleteMapping(value = "/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("id")long id) {
-        userService.delete(id);
-    }
-
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #id")
     public UserDto findById(@PathVariable("id")long id) {
         UserDto userDto = userService.find(id);
         return userHateoasUtil.createSingleUserLinks(userDto);
     }
 
+    @PreAuthorize("authentication.principal.id == #userId")
     @PostMapping(value = "/{id}/orders")
     @ResponseStatus(HttpStatus.CREATED)
     public OrderDto makeOrder(@Valid @RequestBody OrderDto orderDto, @PathVariable("id") long userId) {
@@ -80,6 +80,7 @@ public class UserController {
 
     @GetMapping(value = "/{id}/orders")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #userId")
     public PagedModel<OrderDto> getUserOrders(@RequestParam(name = "page", required = false, defaultValue = "1")
                                             @Min(value = 1, message = "page number must be greater or equal to 1")
                                                     Integer page,
@@ -94,6 +95,7 @@ public class UserController {
 
     @GetMapping(value = "/{id}/orders/{orderId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #userId")
     public OrderDto getUserOrderById(@PathVariable("id") long userId, @PathVariable("orderId")long orderId) {
         OrderDto orderDto = orderService.getOrderByUserIdAndOrderId(userId, orderId);
         return orderHateoasUtil.createSelfRel(orderDto, userId);
