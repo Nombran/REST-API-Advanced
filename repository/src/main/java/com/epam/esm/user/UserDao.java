@@ -19,6 +19,7 @@ import java.util.Optional;
 public class UserDao {
     @PersistenceContext
     private final EntityManager em;
+    private static final String SQL_FIND_USER_BY_LOGIN = "select u from User u where u.login=:login";
 
     @Autowired
     public UserDao(EntityManager entityManager) {
@@ -39,13 +40,6 @@ public class UserDao {
 
     public Optional<User> find(long id) {
         return Optional.ofNullable(em.find(User.class,id));
-    }
-
-    public List<User> findAll() {
-        TypedQuery<User> query = em.createQuery(
-                "select u from User u",
-                User.class);
-        return query.getResultList();
     }
 
     public List<User> findUsers(Integer page, Integer perPage) {
@@ -70,7 +64,7 @@ public class UserDao {
     }
 
     public Optional<User> findUserByLogin(String login) {
-        TypedQuery<User> query = em.createQuery("select u from User u where u.login=:login",User.class);
+        TypedQuery<User> query = em.createQuery(SQL_FIND_USER_BY_LOGIN,User.class);
         query.setParameter("login", login);
         try {
             return Optional.ofNullable(query.getSingleResult());

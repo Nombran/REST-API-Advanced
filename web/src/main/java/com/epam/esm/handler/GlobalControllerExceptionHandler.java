@@ -29,8 +29,8 @@ public class GlobalControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public CustomErrorResponse handleMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+    public ErrorResponse handleMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
         error.setError(HttpStatus.UNSUPPORTED_MEDIA_TYPE.toString());
@@ -40,8 +40,8 @@ public class GlobalControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MappingException.class)
-    public CustomErrorResponse handleMappingException(MappingException ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+    public ErrorResponse handleMappingException(MappingException ex) {
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setError(HttpStatus.BAD_REQUEST.toString());
@@ -67,8 +67,8 @@ public class GlobalControllerExceptionHandler {
             ConstraintViolationException.class,
             MissingServletRequestParameterException.class,
             HttpMessageNotReadableException.class})
-    public CustomErrorResponse handleIllegalArgumentException(RuntimeException ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+    public ErrorResponse handleIllegalArgumentException(RuntimeException ex) {
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setError(HttpStatus.BAD_REQUEST.toString());
@@ -78,9 +78,9 @@ public class GlobalControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public CustomErrorResponse handleRequestMethodNotSupportedResponse
+    public ErrorResponse handleRequestMethodNotSupportedResponse
             (HttpRequestMethodNotSupportedException ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
         error.setError(HttpStatus.METHOD_NOT_ALLOWED.toString());
@@ -95,8 +95,8 @@ public class GlobalControllerExceptionHandler {
             UserNotFoundException.class,
             OrderNotFoundException.class
     })
-    public CustomErrorResponse handleResourceNotFound(Exception ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+    public ErrorResponse handleResourceNotFound(Exception ex) {
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setError(HttpStatus.NOT_FOUND.toString());
@@ -106,8 +106,8 @@ public class GlobalControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler({ServiceConflictException.class})
-    public CustomErrorResponse handleServiceConflictException(ServiceConflictException ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+    public ErrorResponse handleServiceConflictException(ServiceConflictException ex) {
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.CONFLICT.value());
         error.setError(HttpStatus.CONFLICT.toString());
@@ -117,10 +117,10 @@ public class GlobalControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler({org.hibernate.exception.ConstraintViolationException.class})
-    public CustomErrorResponse handleServiceConflictException(
+    public ErrorResponse handleServiceConflictException(
             org.hibernate.exception.ConstraintViolationException ex) {
 
-        CustomErrorResponse error = new CustomErrorResponse();
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.CONFLICT.value());
         error.setError(HttpStatus.CONFLICT.toString());
@@ -131,8 +131,8 @@ public class GlobalControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(BadCredentialsException.class)
-    public CustomErrorResponse handleBadCredentialsException(BadCredentialsException ex) {
-        CustomErrorResponse error = new CustomErrorResponse();
+    public ErrorResponse handleBadCredentialsException(BadCredentialsException ex) {
+        ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.UNAUTHORIZED.value());
         error.setError(HttpStatus.UNAUTHORIZED.toString());

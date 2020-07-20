@@ -89,12 +89,6 @@ public class CertificateService {
         }
     }
 
-    public void delete(long id) {
-        Certificate certificate = certificateDao.find(id)
-                .orElseThrow(() -> new CertificateNotFoundException("Certificate with id = " + id + " doesn't exist"));
-        certificateDao.delete(certificate);
-    }
-
     public CertificateDto find(long id) {
         Optional<Certificate> certificate = certificateDao.find(id);
         if (certificate.isPresent()) {
@@ -142,7 +136,8 @@ public class CertificateService {
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
                         + certificateId + " doesn't exist"));
         List<Tag> certificateTags = certificate.getTags();
-        if (certificateTags.stream().anyMatch(tag -> tag.getId() == tagId)) {
+        if (certificateTags.stream()
+                .anyMatch(tag -> tag.getId() == tagId)) {
             certificateTags.removeIf(tag -> tag.getId() == tagId);
         }
         certificateDao.update(certificate);

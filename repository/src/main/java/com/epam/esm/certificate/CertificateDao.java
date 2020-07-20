@@ -56,8 +56,10 @@ public class CertificateDao {
 
         prepareSearchQuery(query, root, tagNames, textPart);
 
-        if (Stream.of(CertificateOrderBy.values()).anyMatch(value ->
-                value.getOrderByFieldName().equals(orderBy))) {
+        boolean isOrderByCorrect = Stream.of(CertificateOrderBy.values())
+                .anyMatch(value -> value.getOrderByFieldName()
+                        .equals(orderBy));
+        if (isOrderByCorrect) {
             query.orderBy(cb.asc(root.get(orderBy)));
         }
 

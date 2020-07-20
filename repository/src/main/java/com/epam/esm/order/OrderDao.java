@@ -17,6 +17,10 @@ import java.util.Optional;
 public class OrderDao {
     @PersistenceContext
     private final EntityManager em;
+    private static final String SQL_FIND_ORDER_BY_USER_ID = "select o from Order o where o.user.id =: id";
+    private static final String SQL_COUNT_OF_ORDERS = "select count(o) from Order o where o.user.id =: id";
+    private static final String SQL_FIND_BY_USER_ID_AND_ORDER_ID = "select o from Order o where o.id =: orderId " +
+            "and o.user.id =: userId";
 
     @Autowired
     public OrderDao(EntityManager em) {
@@ -28,20 +32,12 @@ public class OrderDao {
         em.persist(order);
     }
 
-    public void update(Order order) {
-        em.merge(order);
-    }
-
     public void delete(Order order) {
         em.remove(order);
     }
 
-    public Optional<Order> findById(long id) {
-        return Optional.ofNullable(em.find(Order.class, id));
-    }
-
     public List<Order> getOrdersByUserId(long userId, int page, int perPage) {
-        TypedQuery<Order> query = em.createQuery("select o from Order o where o.user.id =: id",
+        TypedQuery<Order> query = em.createQuery(SQL_FIND_ORDER_BY_USER_ID,
                 Order.class);
         query.setParameter("id", userId);
         return query
@@ -51,15 +47,17 @@ public class OrderDao {
     }
 
     public Long getCountOfUsersOrders(long userId) {
-        TypedQuery<Long> query = em.createQuery("select count(o) from Order o where o.user.id =: id",
+        TypedQuery<Long> query = em.createQuery(
+                SQL_COUNT_OF_ORDERS,
                 Long.class);
         query.setParameter("id", userId);
         return query.getSingleResult();
     }
 
     public Optional<Order> findOrderByUserIdAndOrderId(long userId, long orderId) {
-        TypedQuery<Order> query = em.createQuery("select o from Order o where o.id =: orderId " +
-                "and o.user.id =: userId", Order.class);
+        TypedQuery<Order> query = em.createQuery(
+                SQL_FIND_BY_USER_ID_AND_ORDER_ID,
+                Order.class);
         query.setParameter("userId", userId);
         query.setParameter("orderId", orderId);
         try {

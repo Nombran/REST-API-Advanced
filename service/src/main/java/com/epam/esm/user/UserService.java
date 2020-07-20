@@ -49,14 +49,6 @@ public class UserService {
         }
     }
 
-    public void delete(long userId) {
-        Optional<User> user = userDao.find(userId);
-        if (!user.isPresent()) {
-            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
-        }
-        userDao.delete(user.get());
-    }
-
     public UserDto find(long id) {
         Optional<User> user = userDao.find(id);
         if(user.isPresent()) {
@@ -67,7 +59,8 @@ public class UserService {
     }
 
     public PagedModel<UserDto> findUsers(int page, int perPage) {
-        List<UserDto> users = userDao.findUsers(page, perPage).stream()
+        List<UserDto> users = userDao.findUsers(page, perPage)
+                .stream()
                 .map(user -> modelMapper.map(user, UserDto.class))
                 .collect(Collectors.toList());
         int totalUsersCount = userDao.findAllUserCount().intValue();

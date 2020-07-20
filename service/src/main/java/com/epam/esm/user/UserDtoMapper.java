@@ -1,6 +1,5 @@
 package com.epam.esm.user;
 
-import com.epam.esm.order.OrderDao;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ public class UserDtoMapper {
 
     @Autowired
     public UserDtoMapper(ModelMapper modelMapper,
-                                OrderDao orderDao,
                          PasswordEncoder passwordEncoder) {
         this.mapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
@@ -32,9 +30,8 @@ public class UserDtoMapper {
 
     public Converter<User, UserDto> toDtoConverter() {
         return context -> {
-            User source = context.getSource();
             UserDto destination = context.getDestination();
-            mapSpecificFields(source, destination);
+            mapSpecificFields(destination);
             return context.getDestination();
         };
     }
@@ -48,7 +45,7 @@ public class UserDtoMapper {
         };
     }
 
-    public void mapSpecificFields(User source, UserDto destination) {
+    public void mapSpecificFields(UserDto destination) {
         destination.setPassword(null);
     }
 

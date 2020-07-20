@@ -40,19 +40,19 @@ public class CertificateController {
      */
     private final TagService tagService;
 
-    private final CertificateHateoasUtil certificateHATEOASUtil;
+    private final CertificateHateoasUtil certificateHateoasUtil;
 
-    private final TagHateoasUtil tagHATEOASUtil;
+    private final TagHateoasUtil tagHateoasUtil;
 
     @Autowired
     public CertificateController(CertificateService certificateService,
                                  TagService tagService,
-                                 CertificateHateoasUtil certificateHATEOASUtil,
-                                 TagHateoasUtil tagHATEOASUtil) {
+                                 CertificateHateoasUtil certificateHateoasUtil,
+                                 TagHateoasUtil tagHateoasUtil) {
         this.certificateService = certificateService;
         this.tagService = tagService;
-        this.certificateHATEOASUtil = certificateHATEOASUtil;
-        this.tagHATEOASUtil = tagHATEOASUtil;
+        this.certificateHateoasUtil = certificateHateoasUtil;
+        this.tagHateoasUtil = tagHateoasUtil;
     }
 
     /**
@@ -88,7 +88,7 @@ public class CertificateController {
     ) {
         PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(tagNames, textPart,
                 orderBy, page, perPage);
-        certificateHATEOASUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
+        certificateHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
         return pagedModel;
     }
 
@@ -110,7 +110,7 @@ public class CertificateController {
     @Secured("ROLE_ADMIN")
     public CertificateDto create(@Valid @RequestBody CertificateDto certificate) {
         CertificateDto certificateDto = certificateService.create(certificate);
-        return certificateHATEOASUtil.createSelfRelLink(certificateDto);
+        return certificateHateoasUtil.createSelfRelLink(certificateDto);
     }
 
     /**
@@ -143,25 +143,6 @@ public class CertificateController {
     }
 
     /**
-     * DELETE method, which used to delete existent certificate, and all<br>
-     * relations to tags, connected with it.<br>
-     * <p>
-     * [DELETE /api/v1/certificates/id/]<br>
-     * Request (application/json).<br>
-     * Response 204 (application/json).
-     * </p>
-     *
-     * @param id represents id of the certificate.
-     * @see CertificateDto
-     */
-    @DeleteMapping(value = "/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Secured("ROLE_ADMIN")
-    public void delete(@PathVariable("id") long id) {
-        certificateService.delete(id);
-    }
-
-    /**
      * GET method, which used to get certificate dto object by it's id.<br>
      * <p>
      * [GET /api/v1/certificates/id/]<br>
@@ -177,7 +158,7 @@ public class CertificateController {
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CertificateDto findById(@PathVariable("id") long id) {
-        return certificateHATEOASUtil.createSelfRelLink(certificateService.find(id));
+        return certificateHateoasUtil.createSelfRelLink(certificateService.find(id));
     }
 
     /**
@@ -197,7 +178,7 @@ public class CertificateController {
     @Secured({"ROLE_USER","ROLE_ADMIN"})
     public CollectionModel<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
        CollectionModel<TagDto> tags =  CollectionModel.of(tagService.findTagsByCertificateId(id));
-       tagHATEOASUtil.createCertificateTagsLinks(tags,id);
+       tagHateoasUtil.createCertificateTagsLinks(tags,id);
        return tags;
     }
 

@@ -37,7 +37,8 @@ public class OrderService {
         userDao.find(userId).orElseThrow(()->
                 new UserNotFoundException("User with id " + userId + " doesn't exist"));
         Order order = modelMapper.map(orderDto, Order.class);
-        BigDecimal totalPrice = order.getCertificates().stream()
+        BigDecimal totalPrice = order.getCertificates()
+                .stream()
                 .map(Certificate::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalPrice(totalPrice);
