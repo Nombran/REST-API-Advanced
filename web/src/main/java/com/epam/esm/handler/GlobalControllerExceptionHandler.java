@@ -1,5 +1,6 @@
 package com.epam.esm.handler;
 
+import com.epam.esm.certificate.CertificateConflictException;
 import com.epam.esm.certificate.CertificateNotFoundException;
 import com.epam.esm.exception.ServiceConflictException;
 import com.epam.esm.order.OrderNotFoundException;
@@ -105,8 +106,9 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler({ServiceConflictException.class})
-    public ErrorResponse handleServiceConflictException(ServiceConflictException ex) {
+    @ExceptionHandler({ServiceConflictException.class,
+            CertificateConflictException.class})
+    public ErrorResponse handleServiceConflictException(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.CONFLICT.value());

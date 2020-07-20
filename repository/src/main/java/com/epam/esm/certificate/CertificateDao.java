@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,6 +22,9 @@ import java.util.stream.Stream;
 public class CertificateDao {
     @PersistenceContext
     private final EntityManager em;
+    private static final String SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME = "select c from Certificate c" +
+            " where c.status=:active or c.status=:published" +
+            " and c.name=:name";
 
     @Autowired
     public CertificateDao(EntityManager em) {
@@ -103,6 +108,20 @@ public class CertificateDao {
         } else {
             query.where(cb.and(predicates.toArray(new Predicate[0])));
         }
+    }
 
+    public Optional<Certificate> findNonInactiveCertificateByName(String name) {
+        TypedQuery<Certificate> typedQuery = em.createQuery(
+                SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME,
+                Certificate.class);
+        typedQuery.setParameter("active", CertificateStatus.ACTIVE);
+        typedQuery.setParameter("published", CertificateStatus.PUBLISHED);
+        typedQuery.setParameter("name", name);
+        try {
+            Certificate certificate = typedQuery.getSingleResult();
+            return Optional.ofNullable(certificate);
+        } catch (NoResultException ex) {
+            return Optional.empty();
+        }
     }
 }

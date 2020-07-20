@@ -27,7 +27,7 @@ public class Certificate {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @NonNull
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     private String name;
     @NonNull
     @Column(name = "description")
@@ -42,6 +42,9 @@ public class Certificate {
     @NonNull
     @Column(name = "duration")
     private int duration;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private CertificateStatus status;
     @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(name = "certificate_tag",
             joinColumns = {@JoinColumn(name = "certificate_id", nullable = false)},

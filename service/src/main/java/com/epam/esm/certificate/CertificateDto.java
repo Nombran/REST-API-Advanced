@@ -49,5 +49,8 @@ public class CertificateDto extends RepresentationModel<CertificateDto> {
     private Integer duration;
     @NonNull
     @NotNull
+    private CertificateStatus status;
+    @NonNull
+    @NotNull
     private List<String> tags;
 }

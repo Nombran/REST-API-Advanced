@@ -1,6 +1,5 @@
 package com.epam.esm.certificate;
 
-import com.epam.esm.exception.ServiceConflictException;
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDao;
 import com.epam.esm.tag.TagDto;
@@ -35,6 +34,11 @@ public class CertificateService {
     }
 
     public CertificateDto create(CertificateDto certificateDto) {
+        String name = certificateDto.getName();
+        Optional<Certificate> certificateWithSuchName = certificateDao.findNonInactiveCertificateByName(name);
+        if(certificateWithSuchName.isPresent()) {
+            throw new CertificateConflictException("Certificate with name '" + name + "' already exists");
+        }
         Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
         certificateDao.create(certificate);
         return modelMapper.map(certificate, CertificateDto.class);
@@ -46,6 +50,29 @@ public class CertificateService {
         Certificate beforeUpdate = certificateDao.find(certificateId)
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
                         + certificate.getId() + " doesn't exist"));
+        CertificateStatus status = beforeUpdate.getStatus();
+        if(status == CertificateStatus.INACTIVE) {
+            throw new CertificateConflictException("Cannot update certificate with status " + status);
+        }
+        if(status == CertificateStatus.ACTIVE) {
+            int compareFieldsResult = Comparator.comparing(Certificate::getName)
+                    .thenComparing(Certificate::getDuration)
+                    .thenComparing(Certificate::getDescription)
+                    .thenComparing(Certificate::getPrice)
+                    .compare(certificate, beforeUpdate);
+            boolean compareTagsResult = beforeUpdate.getTags().containsAll(certificate.getTags());
+            if (!(compareFieldsResult == 0 && compareTagsResult && certificate.getStatus() == CertificateStatus.INACTIVE)) {
+                throw new CertificateConflictException("Certificate with status ACTIVE can be only set to INACTIVE");
+            }
+        }
+        String nameBeforeUpdate = beforeUpdate.getName();
+        String newName = certificate.getName();
+        if(!newName.equals(nameBeforeUpdate)) {
+            Optional<Certificate> certificateWithSuchName = certificateDao.findNonInactiveCertificateByName(newName);
+            if(certificateWithSuchName.isPresent()) {
+                throw new CertificateConflictException("Certificate with name '" + newName + "' already exists");
+            }
+        }
         certificate.setCreationDate(beforeUpdate.getCreationDate());
         certificateDao.update(certificate);
     }
@@ -71,6 +98,7 @@ public class CertificateService {
         String newDescription = changes.getDescription();
         BigDecimal newPrice = changes.getPrice();
         Integer newDuration = changes.getDuration();
+        CertificateStatus status = changes.getStatus();
         List<String> newTags = changes.getTags();
         if (newName != null) {
             certificate.setName(newName);
@@ -86,6 +114,9 @@ public class CertificateService {
         }
         if (newTags != null) {
             certificate.setTags(newTags);
+        }
+        if(status != null) {
+            certificate.setStatus(status);
         }
     }
 
@@ -124,7 +155,7 @@ public class CertificateService {
             return tag;
         });
         if (certificate.getTags().contains(tagToAdd)) {
-            throw new ServiceConflictException("The certificate already has this tag");
+            throw new CertificateConflictException("The certificate already has this tag");
         } else {
             certificate.getTags().add(tagToAdd);
             certificateDao.update(certificate);
