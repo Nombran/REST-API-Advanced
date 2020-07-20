@@ -69,7 +69,7 @@ public class OrderDtoMapper {
         List<Long> certificateIds = source.getCertificatesIds();
             List<Certificate> certificates = certificateIds.stream()
                     .map(id -> certificateDao.find(id).orElseThrow(() ->
-                            new IllegalArgumentException("Certificate with id + " + id + " doesn't exist")))
+                            new IllegalArgumentException("Certificate with id " + id + " doesn't exist")))
                     .collect(Collectors.toList());
             destination.setCertificates(certificates);
             User user = userDao.find(source.getUserId()).orElseThrow(() ->

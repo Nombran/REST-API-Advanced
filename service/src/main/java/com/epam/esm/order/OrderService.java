@@ -1,6 +1,7 @@
 package com.epam.esm.order;
 
 import com.epam.esm.certificate.Certificate;
+import com.epam.esm.certificate.CertificateStatus;
 import com.epam.esm.user.UserDao;
 import com.epam.esm.user.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,12 @@ public class OrderService {
         userDao.find(userId).orElseThrow(()->
                 new UserNotFoundException("User with id " + userId + " doesn't exist"));
         Order order = modelMapper.map(orderDto, Order.class);
+        order.getCertificates().forEach(certificate -> {
+            if(certificate.getStatus() == CertificateStatus.INACTIVE ||
+            certificate.getStatus() == CertificateStatus.PUBLISHED) {
+                throw new OrderConflictException("Cannot make order with non active certificates");
+            }
+        });
         BigDecimal totalPrice = order.getCertificates()
                 .stream()
                 .map(Certificate::getPrice)
