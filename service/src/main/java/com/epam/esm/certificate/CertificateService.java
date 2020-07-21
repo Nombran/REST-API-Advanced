@@ -93,7 +93,7 @@ public class CertificateService {
         update(certificateDto);
     }
 
-    public void mergeObjects(CertificateDto certificate, CertificateDto changes) {
+    private void mergeObjects(CertificateDto certificate, CertificateDto changes) {
         String newName = changes.getName();
         String newDescription = changes.getDescription();
         BigDecimal newPrice = changes.getPrice();
@@ -149,6 +149,10 @@ public class CertificateService {
         Certificate certificate = certificateDao.find(certificateId)
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
                         + certificateId + " doesn't exist"));
+        CertificateStatus status = certificate.getStatus();
+        if(status == CertificateStatus.ACTIVE || status == CertificateStatus.INACTIVE) {
+            throw new CertificateConflictException("Cannot update certificate with status " + status);
+        }
         Tag tag = modelMapper.map(tagDto, Tag.class);
         Tag tagToAdd = tagDao.findByName(tag.getName()).orElseGet(() -> {
             tagDao.create(tag);
@@ -166,6 +170,10 @@ public class CertificateService {
         Certificate certificate = certificateDao.find(certificateId)
                 .orElseThrow(() -> new CertificateNotFoundException("Certificate with id "
                         + certificateId + " doesn't exist"));
+        CertificateStatus status = certificate.getStatus();
+        if(status == CertificateStatus.ACTIVE || status == CertificateStatus.INACTIVE) {
+            throw new CertificateConflictException("Cannot update certificate with status " + status);
+        }
         List<Tag> certificateTags = certificate.getTags();
         if (certificateTags.stream()
                 .anyMatch(tag -> tag.getId() == tagId)) {

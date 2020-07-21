@@ -19,7 +19,8 @@ jar {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+//    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation('org.junit.jupiter:junit-jupiter:5.6.2')
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.2'
@@ -27,4 +28,11 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-hateoas'
     api group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
     implementation project(':repository')
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

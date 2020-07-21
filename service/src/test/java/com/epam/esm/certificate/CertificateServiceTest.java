@@ -1,230 +1,354 @@
 package com.epam.esm.certificate;
 
+import com.epam.esm.tag.Tag;
+import com.epam.esm.tag.TagDao;
+import com.epam.esm.tag.TagDto;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.PagedModel;
+
+import javax.validation.ConstraintViolationException;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.*;
 
 public class CertificateServiceTest {
-//    @InjectMocks
-//    CertificateService certificateService;
-//    @Mock
-//    CertificateDao certificateDao;
-//    @Mock
-//    TagDao tagDao;
-//    @Mock
-//    CertificateTagDao certificateTagDao;
-//    @Spy
-//    ModelMapper modelMapper;
-//
-//    @Before
-//    public void init() {
-//        MockitoAnnotations.initMocks(this);
-//    }
-//
-//    @Test
-//    public void create_certificateWithTags_shouldEndWithoutException() {
-//        //Given
-//        List<Certificate> certificatesDB = new ArrayList<>();
-//        Tag tagOne = new Tag(1, "tagOne");
-//        Tag tagTwo = new Tag(2, "tagTwo");
-//        List<Tag> tagsInDB = Arrays.asList(tagOne, tagTwo);
-//        Mockito.when(certificateTagDao.create(anyLong(), anyLong())).thenReturn(true);
-//        Mockito.when(tagDao.findByName(anyString())).thenAnswer(invocation -> {
-//            String tagName = invocation.getArgument(0);
-//            return tagsInDB.stream()
-//                    .filter(tag -> tag.getName().equals(tagName))
-//                    .findFirst();
-//        });
-//        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
-//                5, Arrays.asList("tagOne", "tagTwo"));
-//        Mockito.when(certificateDao.create(any(Certificate.class))).thenAnswer(invocation -> {
-//            Certificate certificate = invocation.getArgument(0);
-//            certificate.setId(1);
-//            certificatesDB.add(certificate);
-//            return certificate;
-//        });
-//
-//        //When
-//        certificateService.create(certificateDto);
-//
-//        //Then
-//        assertEquals(1,certificatesDB.size());
-//        verify(certificateDao, times(1)).create(any(Certificate.class));
-//        verify(tagDao, times(2)).findByName(anyString());
-//        verify(certificateTagDao, times(2)).create(anyLong(), anyLong());
-//    }
-//
-//    @Test(expected = ServiceConflictException.class)
-//    public void create_certificateWithDuplicateName_shouldThrowException() {
-//        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
-//                5, Collections.emptyList());
-//        Mockito.when(certificateTagDao.create(anyLong(), anyLong())).thenReturn(true);
-//        Mockito.when(tagDao.findByName(anyString())).thenReturn(Optional.empty());
-//        Mockito.when(certificateDao.create(any(Certificate.class)))
-//                .thenThrow(new DuplicateKeyException("message"));
-//
-//        certificateService.create(certificateDto);
-//    }
-//
-//    @Test
-//    public void update_certificateWithUpdatedName_shouldEndWithoutException() {
-//        //Given
-//        Certificate certificateBeforeUpdate = new Certificate(1, "name", "description",
-//                new BigDecimal("12.6"), LocalDateTime.now(), LocalDateTime.now().plusDays(1),
-//                5);
-//        List<Certificate> certificatesInDB = Collections.singletonList(certificateBeforeUpdate);
-//        Mockito.when(certificateDao.update(any(Certificate.class))).thenAnswer(invocation -> {
-//            Certificate certificate = invocation.getArgument(0);
-//            certificatesInDB.forEach(item -> {
-//                if(item.getId() == certificate.getId()) {
-//                    item = certificate;
-//                }
-//            });
-//            return true;
-//        });
-//        CertificateDto certificateDto = new CertificateDto(1, "updated name", "description",
-//                new BigDecimal("12.6"), LocalDateTime.now(), LocalDateTime.now().plusDays(1),
-//                5, Arrays.asList("tagOne", "tagThree"));
-//        Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
-//        Tag tagOne = new Tag(1, "tagOne");
-//        Tag tagTwo = new Tag(2, "tagTwo");
-//        List<Tag> pastCertificateTags = Arrays.asList(tagOne, tagTwo);
-//        List<Tag> tagsInDB = Arrays.asList(tagOne, tagTwo);
-//        Mockito.when(tagDao.create(any(Tag.class))).thenAnswer(invocation -> {
-//            Tag tag = invocation.getArgument(0);
-//            tag.setId(3);
-//            return tag;
-//        });
-//        Mockito.when(tagDao.findByCertificateId(1)).thenReturn(pastCertificateTags);
-//        Mockito.when(certificateTagDao.create(anyLong(), anyLong())).thenReturn(true);
-//        Mockito.when(certificateTagDao.delete(anyLong(), anyLong())).thenReturn(true);
-//        Mockito.when(tagDao.findByName(anyString())).thenAnswer(invocation -> {
-//            String tagName = invocation.getArgument(0);
-//            return tagsInDB.stream()
-//                    .filter(tag -> tag.getName().equals(tagName))
-//                    .findFirst();
-//        });
-//        certificateBeforeUpdate.setName("updated name");
-//
-//        //When
-//        certificateService.update(certificateDto);
-//
-//        //Then
-//        assertEquals(certificateBeforeUpdate, certificatesInDB.get(0));
-//        verify(certificateDao, times(1)).update(certificate);
-//        verify(tagDao, times(1)).findByCertificateId(1);
-//        verify(certificateTagDao, times(1)).delete(1,2);
-//        verify(tagDao,times(1)).findByName("tagThree");
-//        verify(tagDao, times(1)).create(any(Tag.class));
-//        verify(certificateTagDao, times(1)).create(1,3);
-//    }
-//
-//    @Test
-//    public void delete_certificateWithCorrectId_shouldEndWithoutException() {
-//        //Given
-//        Mockito.when(certificateTagDao.delete(anyLong(),anyLong())).thenReturn(true);
-//        Mockito.when(certificateDao.delete(1)).thenAnswer((invocation)-> {
-//            return (Long) invocation.getArgument(0) == 1;
-//        });
-//
-//        //When
-//        certificateService.delete(1);
-//
-//        //Then
-//        verify(certificateTagDao,times(1)).deleteByCertificateId(anyLong());
-//        verify(certificateDao, times(1)).delete(1);
-//    }
-//
-//    @Test(expected = CertificateNotFoundException.class)
-//    public void delete_certificateWithNonexistentId_shouldEndWithException() {
-//        //Given
-//        Mockito.when(certificateTagDao.delete(anyLong(),anyLong())).thenReturn(true);
-//        Mockito.when(certificateDao.delete(1)).thenAnswer((invocation)-> {
-//            return (Long) invocation.getArgument(0) == 1;
-//        });
-//
-//        //When
-//        certificateService.delete(2);
-//
-//        //Then
-//        verify(certificateTagDao,times(1)).deleteByCertificateId(anyLong());
-//        verify(certificateDao, times(1)).delete(2);
-//    }
-//
-//    @Test
-//    public void find_correctCertificateId_shouldReturnCertificate() {
-//        //Given
-//        Certificate certificate = new Certificate(1, "name", "description",
-//                new BigDecimal("12.6"), LocalDateTime.now(), null, 12);
-//        Tag tagOne = new Tag(1, "tagOne");
-//        Tag tagTwo = new Tag(2, "tagTwo");
-//        List<Tag> certificateTags = Arrays.asList(tagOne, tagTwo);
-//        Mockito.when(certificateDao.find(1)).thenReturn(Optional.of(certificate));
-//        Mockito.when(tagDao.findByCertificateId(1)).thenReturn(certificateTags);
-//        List<String> tagsInDto = certificateTags.stream()
-//                .map(Tag::getName)
-//                .collect(Collectors.toList());
-//        CertificateDto expected = new CertificateDto(1, "name", "description",
-//                new BigDecimal("12.6"), LocalDateTime.now(), null, 12, tagsInDto);
-//        Mockito.when(modelMapper.map(certificate, CertificateDto.class)).thenReturn(expected);
-//
-//        //When
-//        CertificateDto result = certificateService.find(1);
-//
-//        //Then
-//        assertEquals(expected, result);
-//        verify(certificateDao, times(1)).find(1);
-//    }
-//
-//    @Test(expected = CertificateNotFoundException.class)
-//    public void find_nonexistentCertificateId_shouldEndWithException() {
-//        //Given
-//        Mockito.when(certificateDao.find(1)).thenReturn(Optional.empty());
-//
-//        //When
-//        CertificateDto result = certificateService.find(1);
-//
-//        //Then
-//        verify(certificateDao, times(1)).find(1);
-//    }
-//
-//    @Test()
-//    public void findCertificates_tagNameAndDescription_shouldReturnCertificatesList() {
-//        //Given
-//        Certificate certificate = new Certificate(1, "name", "description",
-//                new BigDecimal("12.6"), LocalDateTime.now(), null, 12);
-//        Mockito.when(certificateDao.findCertificates(anyString(), any(MapSqlParameterSource.class)))
-//                .thenReturn(Collections.singletonList(certificate));
-//        Mockito.when(tagDao.findByCertificateId(1)).thenReturn(Collections.emptyList());
-//        List<CertificateDto> expected = Stream.of(certificate)
-//                .map(item -> modelMapper.map(item, CertificateDto.class))
-//                .collect(Collectors.toList());
-//
-//        //When
-//        List<CertificateDto> result =  certificateService.findCertificates("tagName",
-//                "descriptionPart",null);
-//
-//        //Then
-//        assertEquals(expected, result);
-//        verify(certificateDao,times(1)).findCertificates(anyString(),
-//                any(MapSqlParameterSource.class));
-//    }
-//
-//    @Test(expected = IllegalArgumentException.class)
-//    public void findCertificates_invalidOrderByParameter_shouldThrowException() {
-//        certificateService.findCertificates(null, null, "Invalid");
-//    }
-//
-//    @Test
-//    public void addCertificateTag_newTag_shouldEndWithoutException() {
-//        //Given
-//        Tag tagOne = new Tag(1, "tagOne");
-//        Mockito.when(tagDao.findByName("tagOne")).thenReturn(Optional.of(tagOne));
-//        Mockito.when(certificateTagDao.create(anyLong(), anyLong())).thenReturn(true);
-//
-//        //When
-//        certificateService.addCertificateTag(tagOne,1);
-//
-//        //Then
-//        verify(tagDao, times(1)).findByName("tagOne");
-//        verify(certificateTagDao, times(1)).create(anyLong(), anyLong());
-//    }
+    @InjectMocks
+    CertificateService certificateService;
+    @Mock
+    CertificateDao certificateDao;
+    @Mock
+    TagDao tagDao;
+    @Spy
+    ModelMapper modelMapper;
+
+    @BeforeEach
+    public void init() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void create_certificateWithTags_shouldReturnCertificateWithId() {
+        //Given
+        Mockito.when(certificateDao.findNonInactiveCertificateByName("name")).thenReturn(Optional.empty());
+        doAnswer(invocation -> {
+            Certificate certificate = invocation.getArgument(0);
+            certificate.setId(1);
+            return null;
+        }).when(certificateDao).create(notNull());
+
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        CertificateDto result = certificateService.create(certificateDto);
+
+        //Then
+        assertEquals(1, result.getId());
+    }
+
+    @Test
+    public void create_certificateWithTags_shouldCallDaoCreateMethod() {
+        //Given
+        doNothing().when(certificateDao).create(any(Certificate.class));
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        certificateService.create(certificateDto);
+
+        //Then
+        verify(certificateDao, times(1)).create(notNull());
+    }
+
+    @Test
+    public void create_certificateWithTags_shouldThrowConflictException() {
+        //Given
+        doAnswer((invocation) -> Optional.of(new Certificate()))
+                .when(certificateDao)
+                .findNonInactiveCertificateByName(anyString());
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        CertificateConflictException result = Assertions.assertThrows(CertificateConflictException.class,
+                () -> certificateService.create(certificateDto));
+
+        //Then
+        assertEquals("Certificate with name 'name' already exists", result.getMessage());
+    }
+
+    @Test
+    public void update_inactiveCertificate_shouldThrowConflictException() {
+        //Given
+        doAnswer((invocation)-> {
+            Certificate certificate = new Certificate();
+            certificate.setStatus(CertificateStatus.INACTIVE);
+            return Optional.of(certificate);
+        }).when(certificateDao).find(anyLong());
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        CertificateConflictException exception = assertThrows(CertificateConflictException.class,()->
+                certificateService.update(certificateDto));
+
+        //Then
+        assertEquals("Cannot update certificate with status INACTIVE", exception.getMessage());
+    }
+
+    @Test
+    public void update_activeCertificate_shouldThrowConflictException() {
+        //Given
+        doAnswer((invocation)-> {
+            Certificate certificate = new Certificate("name", "description", new BigDecimal("12.6"),
+                    5);
+            certificate.setStatus(CertificateStatus.ACTIVE);
+            certificate.setTags(Collections.emptyList());
+            return Optional.of(certificate);
+        }).when(certificateDao).find(anyLong());
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        CertificateConflictException exception = assertThrows(CertificateConflictException.class,()->
+                certificateService.update(certificateDto));
+
+        //Then
+        assertEquals("Certificate with status ACTIVE can be only set to INACTIVE", exception.getMessage());
+    }
+
+    @Test
+    public void update_publishedCertificateWithTags_shouldCallDaoUpdate() {
+        //Given
+        doAnswer((invocation)-> {
+            Certificate certificate = new Certificate("name", "description", new BigDecimal("12.6"),
+                    5);
+            certificate.setStatus(CertificateStatus.PUBLISHED);
+            certificate.setTags(Collections.emptyList());
+            return Optional.of(certificate);
+        }).when(certificateDao).find(anyLong());
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        certificateService.update(certificateDto);
+
+        //Then
+        verify(certificateDao, times(1)).update(any(Certificate.class));
+    }
+
+    @Test
+    public void update_certificateWithNonUniqueName_shouldThrowConflictException(){
+        //Given
+        doAnswer((invocation)-> {
+            Certificate certificate = new Certificate("name 2", "description", new BigDecimal("12.6"),
+                    5);
+            certificate.setStatus(CertificateStatus.PUBLISHED);
+            certificate.setTags(Collections.emptyList());
+            return Optional.of(certificate);
+        }).when(certificateDao).find(anyLong());
+        doAnswer((invocation -> Optional.of(new Certificate())))
+                .when(certificateDao)
+                .findNonInactiveCertificateByName("name");
+        CertificateDto certificateDto = new CertificateDto("name", "description", new BigDecimal("12.6"),
+                5, CertificateStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
+
+        //When
+        CertificateConflictException exception = Assertions.assertThrows(CertificateConflictException.class,
+                ()-> certificateService.update(certificateDto));
+
+        //Then
+        assertEquals("Certificate with name 'name' already exists", exception.getMessage());
+    }
+
+    @Test
+    public void patch_certificateWithNonexistentId_shouldThrowException() {
+        //Given
+        doAnswer((invocation -> Optional.empty()))
+                .when(certificateDao)
+                .find(anyLong());
+        CertificateDto certificateDto = new CertificateDto();
+
+        //When
+        CertificateNotFoundException exception = Assertions.assertThrows(CertificateNotFoundException.class,
+                ()-> certificateService.patch(1,certificateDto));
+
+        //Then
+        assertEquals("Certificate with id = " + 1 + " doesn't exist", exception.getMessage());
+    }
+
+    @Test
+    public void patch_invalidName_shouldThrowException() {
+        //Given
+        doAnswer(invocation -> Optional.of(new Certificate(1,"name",
+                "description", new BigDecimal("12.6"), LocalDateTime.now(),LocalDateTime.now(),
+                5, CertificateStatus.PUBLISHED, Collections.emptyList())))
+                .when(certificateDao)
+                .find(anyLong());
+        CertificateDto changes = new CertificateDto();
+        changes.setName("a");
+
+        //When Then
+        Assertions.assertThrows(ConstraintViolationException.class,
+                ()-> certificateService.patch(1, changes));
+    }
+
+    @Test
+    public void patch_correctCertificateChanges_shouldCallDaoUpdate() {
+        //Given
+        doAnswer(invocation -> Optional.of(new Certificate(1,"name",
+                "description", new BigDecimal("12.6"), LocalDateTime.now(),LocalDateTime.now(),
+                5, CertificateStatus.PUBLISHED, Collections.emptyList())))
+                .when(certificateDao)
+                .find(anyLong());
+        CertificateDto changes = new CertificateDto();
+        changes.setName("new name for certificate");
+
+        //When
+        certificateService.patch(1, changes);
+
+        //Then
+        verify(certificateDao, times(1)).update(any(Certificate.class));
+    }
+
+    @Test
+    public void find_NonexistentCertificateId_shouldThrowException() {
+        //Given
+        doAnswer(invocation -> Optional.empty())
+                .when(certificateDao)
+                .find(anyLong());
+
+        //When Then
+        Assertions.assertThrows(CertificateNotFoundException.class,
+                ()->certificateService.find(1));
+    }
+
+    @Test
+    public void findCertificates_defaultParams_shouldReturnCorrectPageMetadata() {
+        //Given
+        doAnswer(invocation -> 2L)
+                .when(certificateDao).getTotalElementsCountFromCertificateSearch(notNull(),anyString());
+        int page = 1;
+        int perPage = 50;
+        doAnswer(invocation -> {
+            Certificate certificateOne = new Certificate("name", "description", new BigDecimal("12.6"),
+                    5);
+            certificateOne.setStatus(CertificateStatus.PUBLISHED);
+            certificateOne.setTags(Collections.emptyList());
+            Certificate certificateTwo = new Certificate("name 2", "description 2", new BigDecimal("12.6"),
+                    10);
+            certificateTwo.setStatus(CertificateStatus.PUBLISHED);
+            certificateTwo.setTags(Collections.emptyList());
+            return Arrays.asList(certificateOne, certificateTwo);
+        })
+                .when(certificateDao).findCertificates(notNull(), anyString(), anyString(), anyInt(), anyInt());
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, 2);
+
+        //When
+        PagedModel<CertificateDto> model = certificateService.findCertificates(new String[0], "text",
+                "orderBy", page, perPage);
+
+        //Then
+        assertEquals(pageMetadata, model.getMetadata());
+    }
+
+    @Test
+    public void addCertificateTag_newTag_shouldCallDaoUpdate() {
+        //Given
+        doAnswer(invocation -> {
+            Certificate certificate = new Certificate("name", "description", new BigDecimal("2.5"),
+                5);
+            certificate.setId(1);
+            certificate.setStatus(CertificateStatus.PUBLISHED);
+            certificate.setTags(new ArrayList<>());
+            return Optional.of(certificate);
+        }).when(certificateDao).find(1L);
+        TagDto newTag = new TagDto("new Tag");
+
+        //When
+        certificateService.addCertificateTag(newTag, 1);
+
+        //Then
+        verify(certificateDao, times(1)).update(notNull());
+    }
+
+    @Test
+    public void addCertificateTag_existentTag_shouldThrowException() {
+        //Given
+        doAnswer(invocation -> {
+            Tag tag = new Tag("new Tag");
+            tag.setId(1);
+            List<Tag> tags = new ArrayList<>();
+            tags.add(tag);
+            Certificate certificate = new Certificate("name", "description", new BigDecimal("2.5"),
+                    5);
+            certificate.setId(1L);
+            certificate.setStatus(CertificateStatus.PUBLISHED);
+            certificate.setTags(tags);
+            return Optional.of(certificate);
+        }).when(certificateDao).find(1L);
+        doAnswer(invocation -> {
+            Tag tag = new Tag("new Tag");
+            tag.setId(1);
+            return tag;
+        })
+                .when(tagDao)
+                .find(1L);
+        TagDto newTag = new TagDto(1L,"new Tag");
+
+        //When Then
+        Assertions.assertThrows(CertificateConflictException.class,
+                ()->certificateService.addCertificateTag(newTag, 1L));
+    }
+
+    @Test
+    public void addCertificateTag_nonPublishedCertificate_shouldThrowException() {
+        //Given
+        doAnswer(invocation -> {
+            Certificate certificate = new Certificate("name", "description", new BigDecimal("2.5"),
+                    5);
+            certificate.setId(1L);
+            certificate.setStatus(CertificateStatus.ACTIVE);
+            return Optional.of(certificate);
+        }).when(certificateDao).find(1L);
+        TagDto newTag = new TagDto("new Tag");
+
+        //When Then
+        Assertions.assertThrows(CertificateConflictException.class,
+                ()-> certificateService.addCertificateTag(newTag, 1L));
+    }
+
+    @Test
+    public void deleteCertificateTag_existentCertificateTag_shouldDeleteTag() {
+        //Given
+        Tag tag = new Tag("new Tag");
+        tag.setId(1);
+        List<Tag> tags = new ArrayList<>();
+        tags.add(tag);
+        Certificate certificate = new Certificate("name", "description", new BigDecimal("2.5"),
+                5);
+        certificate.setId(1L);
+        certificate.setStatus(CertificateStatus.PUBLISHED);
+        certificate.setTags(tags);
+        doAnswer(invocation -> Optional.of(certificate)).when(certificateDao).find(1L);
+        doAnswer(invocation -> tag)
+                .when(tagDao)
+                .find(1L);
+
+        //When
+        certificateService.deleteCertificateTag(1L, 1L);
+
+        //Then
+        assertEquals(0, certificate.getTags().size());
+    }
 }
