@@ -1,6 +1,7 @@
 package com.epam.esm.tag;
 
 import com.epam.esm.certificate.CertificateDao;
+import com.epam.esm.certificate.CertificateNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.PagedModel;
@@ -63,7 +64,7 @@ public class TagService {
                     .map(tag -> modelMapper.map(tag, TagDto.class))
                     .collect(Collectors.toList());
         } else {
-            throw new TagNotFoundException("There is no certificate with id = " + id);
+            throw new CertificateNotFoundException("There is no certificate with id = " + id);
         }
     }
 
