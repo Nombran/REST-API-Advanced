@@ -1,10 +1,8 @@
 package com.epam.esm.user;
 
-import com.epam.esm.exception.ServiceConflictException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +26,10 @@ public class UserService {
     }
 
     public UserDto create(UserDto userDto) {
-            userDto.setId(0);
-            User user = modelMapper.map(userDto, User.class);
-                userDao.create(user);
-                return modelMapper.map(user, UserDto.class);
+        userDto.setId(0);
+        User user = modelMapper.map(userDto, User.class);
+        userDao.create(user);
+        return modelMapper.map(user, UserDto.class);
     }
 
     public UserDto update(UserDto userDto, long id) {
@@ -40,18 +38,13 @@ public class UserService {
             throw new UserNotFoundException("User with id " + userDto.getId() + " doesn't exist");
         }
         User user = modelMapper.map(userDto, User.class);
-        try {
-            userDao.update(user);
-            return modelMapper.map(user, UserDto.class);
-        } catch (DataIntegrityViolationException ex) {
-            log.error("User with login '" + user.getLogin() + "' already exists");
-            throw new ServiceConflictException("User with login '" + user.getLogin() + "' already exists");
-        }
+        userDao.update(user);
+        return modelMapper.map(user, UserDto.class);
     }
 
     public UserDto find(long id) {
         Optional<User> user = userDao.find(id);
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             return modelMapper.map(user.get(), UserDto.class);
         } else {
             throw new UserNotFoundException("User with id " + id + " doesn't exist");

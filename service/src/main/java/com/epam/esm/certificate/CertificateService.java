@@ -77,7 +77,6 @@ public class CertificateService {
         certificateDao.update(certificate);
     }
 
-    @Transactional
     public void patch(long id, CertificateDto changes) {
         Certificate certificate = certificateDao.find(id).orElseThrow(() ->
                 new CertificateNotFoundException("Certificate with id = " + id + " doesn't exist")
