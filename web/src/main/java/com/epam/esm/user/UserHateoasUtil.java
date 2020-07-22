@@ -39,7 +39,7 @@ public class UserHateoasUtil {
                 .findById(userDto.getId()))
                 .withSelfRel());
         userDto.add(linkTo(methodOn(OrderController.class)
-                .getUserOrders(1,50,userDto.getId()))
+                .getUserOrders(1,50,null))
                 .withRel("userOrders"));
     }
 
@@ -52,7 +52,7 @@ public class UserHateoasUtil {
                 .withRel("allUsers")
                 .expand());
         userDto.add(linkTo(methodOn(OrderController.class)
-                .getUserOrders(1,50, userDto.getId()))
+                .getUserOrders(1,50, null))
                 .withRel("usersOrders"));
         return userDto;
     }

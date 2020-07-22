@@ -23,7 +23,7 @@ public class CertificateDao {
     @PersistenceContext
     private final EntityManager em;
     private static final String SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME = "select c from Certificate c" +
-            " where c.status=:active or c.status=:published" +
+            " where c.status in(:active,:published)" +
             " and c.name=:name";
 
     @Autowired
@@ -74,19 +74,26 @@ public class CertificateDao {
                 .getResultList();
     }
 
-    public Long getTotalElementsCountFromCertificateSearch(List<String> tagNames, String textPart) {
+    public int getTotalElementsCountFromCertificateSearch(List<String> tagNames, String textPart) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<Certificate> root = query.from(Certificate.class);
-        query.select(cb.count(root));
 
         prepareSearchQuery(query, root, tagNames, textPart);
 
-        return em.createQuery(query)
-                .getSingleResult();
+        query.select(cb.countDistinct(root));
+
+        if(tagNames.size() == 0) {
+            return em.createQuery(query)
+                    .getSingleResult()
+                    .intValue();
+        } else {
+            return em.createQuery(query)
+                    .getResultList().size();
+        }
     }
 
-    public <X> void prepareSearchQuery(CriteriaQuery<X> query, Root<Certificate> root,
+    public <X> void prepareSearchQuery(AbstractQuery<X> query, Root<Certificate> root,
                                        List<String> tagNames, String textPart) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         List<Predicate> predicates = new ArrayList<>();
@@ -104,7 +111,8 @@ public class CertificateDao {
             Predicate predicateCertificateTagsInInputList = tagJoin.get(Tag_.NAME).in(tagNames);
             predicates.add(predicateCertificateTagsInInputList);
             query.where(cb.and(predicates.toArray(new Predicate[0])))
-                    .having(cb.equal(countOfCertificateTagsInGroup, tagNames.size()));
+                    .having(cb.equal(countOfCertificateTagsInGroup, tagNames.size()))
+                    .groupBy(root);
         } else {
             query.where(cb.and(predicates.toArray(new Predicate[0])));
         }

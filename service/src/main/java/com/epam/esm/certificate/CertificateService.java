@@ -138,8 +138,7 @@ public class CertificateService {
                 .stream()
                 .map(certificate -> modelMapper.map(certificate, CertificateDto.class))
                 .collect(Collectors.toList());
-        int totalElements = certificateDao.getTotalElementsCountFromCertificateSearch(tags, textPart)
-                .intValue();
+        int totalElements = certificateDao.getTotalElementsCountFromCertificateSearch(tags, textPart);
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, totalElements);
         return PagedModel.of(resultList, pageMetadata);
     }
