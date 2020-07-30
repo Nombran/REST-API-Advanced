@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 /**
- * Class CertificateController for Rest Api Basics Task.
+ * Class CertificateController for Rest Api Advanced Task.
  *
  * @author ARTSIOM BERASTSEN
  * @version 1.0
@@ -40,8 +40,18 @@ public class CertificateController {
      */
     private final TagService tagService;
 
+    /**
+     * Field certificateHateoasUtil
+     *
+     * @see CertificateHateoasUtil
+     */
     private final CertificateHateoasUtil certificateHateoasUtil;
 
+    /**
+     * Field TagHateoasUtil
+     *
+     * @see TagHateoasUtil
+     */
     private final TagHateoasUtil tagHateoasUtil;
 
     @Autowired
@@ -56,20 +66,25 @@ public class CertificateController {
     }
 
     /**
-     * GET method findCertificates, that returns List of CertificateDto objects, which match <br>
-     * to all request params.<br>
+     * GET method findCertificates, that returns PageModel object with list of<br>
+     * certificates, which match to all request params.<br>
      * <p>
      * [GET /api/v1/certificates/]<br>
      * Request (application/json).<br>
      * Response 200 (application/json).
      * </p>
      *
-     * @param t        represents tag's name, connected with certificate
+     * @param tagNames represents names of tags, connected with certificate
      * @param textPart represents part of full certificate's description
      * @param orderBy  represents field name for ordering by
-     * @return list of certificatesDto objects, which match to all request params
+     * @param page represents page number
+     * @param perPage represents number of certificate's items per page
+     * @return PageModel object with list of certificatesDto objects, which match to all request params<br>
+     * and PageMetadata info
      * @see CertificateDto
      * @see Certificate
+     * @see CertificateParamWrapper
+     * @see CertificateHateoasUtil
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -86,8 +101,8 @@ public class CertificateController {
                                                        @Min(value = 1, message = "perPage param must be greater or equal to 1")
                                                                Integer perPage
     ) {
-        PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(tagNames, textPart,
-                orderBy, page, perPage);
+        CertificateParamWrapper wrapper = new CertificateParamWrapper(tagNames, textPart, orderBy, page, perPage);
+        PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(wrapper);
         certificateHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
         return pagedModel;
     }
@@ -104,6 +119,7 @@ public class CertificateController {
      * @param certificate represents dto object, which contain certificate<br>
      *                    information and list of it's tags.
      * @see CertificateDto
+     * @see CertificateHateoasUtil
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -135,6 +151,19 @@ public class CertificateController {
         certificateService.update(certificate);
     }
 
+    /**
+     * PATCH method, used to update existent certificate object<br>
+     * by fields <br>
+     * <p>
+     * [PATCH /api/v1/certificates/id/]<br>
+     * Request (application/json).<br>
+     * Response 200 (application/json).
+     * </p>
+     *
+     * @param certificateDto represents certificate fields<br>
+     * @param id          represents id of the certificate.
+     * @see CertificateDto
+     */
     @PatchMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Secured("ROLE_ADMIN")

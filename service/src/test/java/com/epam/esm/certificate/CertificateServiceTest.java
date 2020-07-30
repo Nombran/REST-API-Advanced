@@ -236,8 +236,8 @@ public class CertificateServiceTest {
     @Test
     public void findCertificates_defaultParams_shouldReturnCorrectPageMetadata() {
         //Given
-        doAnswer(invocation -> 2L)
-                .when(certificateDao).getTotalElementsCountFromCertificateSearch(notNull(),anyString());
+        doAnswer(invocation -> 2)
+                .when(certificateDao).getTotalElementsCountFromCertificateSearch(notNull());
         int page = 1;
         int perPage = 50;
         doAnswer(invocation -> {
@@ -251,12 +251,13 @@ public class CertificateServiceTest {
             certificateTwo.setTags(Collections.emptyList());
             return Arrays.asList(certificateOne, certificateTwo);
         })
-                .when(certificateDao).findCertificates(notNull(), anyString(), anyString(), anyInt(), anyInt());
+                .when(certificateDao).findCertificates(notNull());
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, 2);
+        CertificateParamWrapper wrapper = new CertificateParamWrapper(new String[0], "text",
+                "price", page, perPage);
 
         //When
-        PagedModel<CertificateDto> model = certificateService.findCertificates(new String[0], "text",
-                "orderBy", page, perPage);
+        PagedModel<CertificateDto> model = certificateService.findCertificates(wrapper);
 
         //Then
         assertEquals(pageMetadata, model.getMetadata());

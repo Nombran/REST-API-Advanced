@@ -14,8 +14,12 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -128,18 +132,26 @@ public class CertificateService {
         }
     }
 
-    public PagedModel<CertificateDto> findCertificates(String[] tagNames, String textPart, String orderBy,
-                                                       int page, int perPage) {
-        List<String> tags;
-        if (tagNames != null) {
-            tags = Arrays.asList(tagNames);
-        } else tags = Collections.emptyList();
-        List<CertificateDto> resultList = certificateDao.findCertificates(tags, textPart, orderBy, page, perPage)
+    public PagedModel<CertificateDto> findCertificates(CertificateParamWrapper wrapper) {
+        String orderBy = wrapper.getOrderBy();
+        boolean isOrderByCorrect = Stream.of(CertificateOrderBy.values())
+                .anyMatch(value -> value.getOrderByFieldName()
+                        .equals(orderBy));
+        if(!isOrderByCorrect) {
+            throw new IllegalArgumentException("Invalid orderBy param");
+        }
+        List<CertificateDto> resultList = certificateDao.findCertificates(wrapper)
                 .stream()
                 .map(certificate -> modelMapper.map(certificate, CertificateDto.class))
                 .collect(Collectors.toList());
-        int totalElements = certificateDao.getTotalElementsCountFromCertificateSearch(tags, textPart);
+        int totalElements = certificateDao.getTotalElementsCountFromCertificateSearch(wrapper);
+        int page = wrapper.getPage();
+        int perPage = wrapper.getPerPage();
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, totalElements);
+        long totalPages = pageMetadata.getTotalPages();
+        if(totalPages < page) {
+            throw new IllegalArgumentException("Invalid page number. There is only " + totalPages + " page/pages");
+        }
         return PagedModel.of(resultList, pageMetadata);
     }
 

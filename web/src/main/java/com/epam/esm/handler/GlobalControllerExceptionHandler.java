@@ -2,7 +2,6 @@ package com.epam.esm.handler;
 
 import com.epam.esm.certificate.CertificateConflictException;
 import com.epam.esm.certificate.CertificateNotFoundException;
-import com.epam.esm.exception.ServiceConflictException;
 import com.epam.esm.order.OrderConflictException;
 import com.epam.esm.order.OrderNotFoundException;
 import com.epam.esm.tag.TagNotFoundException;
@@ -67,8 +66,7 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({IllegalArgumentException.class,
             ConstraintViolationException.class,
-            MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class})
+            MissingServletRequestParameterException.class})
     public ErrorResponse handleIllegalArgumentException(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
@@ -107,8 +105,7 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler({ServiceConflictException.class,
-            CertificateConflictException.class,
+    @ExceptionHandler({CertificateConflictException.class,
             OrderConflictException.class})
     public ErrorResponse handleServiceConflictException(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse();
@@ -141,6 +138,17 @@ public class GlobalControllerExceptionHandler {
         error.setStatus(HttpStatus.UNAUTHORIZED.value());
         error.setError(HttpStatus.UNAUTHORIZED.toString());
         error.setMessage(ex.getMessage());
+        return error;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({HttpMessageNotReadableException.class})
+    public ErrorResponse handleInvalidFormatException(HttpMessageNotReadableException ex) {
+        ErrorResponse error = new ErrorResponse();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setError(HttpStatus.BAD_REQUEST.toString());
+        error.setMessage(ex.getCause().getLocalizedMessage());
         return error;
     }
 }

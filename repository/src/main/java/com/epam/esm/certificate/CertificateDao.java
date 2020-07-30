@@ -12,10 +12,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -44,27 +41,29 @@ public class CertificateDao {
         em.merge(certificate);
     }
 
-    public void delete(Certificate certificate) {
-        em.remove(certificate);
-    }
-
     public Optional<Certificate> find(long id) {
         return Optional.ofNullable(em.find(Certificate.class, id));
     }
 
-    public List<Certificate> findCertificates(List<String> tagNames, String textPart, String orderBy,
-                                              Integer page, Integer perPage) {
+    public List<Certificate> findCertificates(CertificateParamWrapper wrapper) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
         Root<Certificate> root = query.from(Certificate.class);
         query.select(root);
 
+        String[] tagNamesArray = wrapper.getTagNames();
+        List<String> tagNames = null;
+        if(tagNamesArray != null) {
+            tagNames = Arrays.asList(tagNamesArray);
+        }
+        String textPart = wrapper.getTextPart();
+        String orderBy = wrapper.getOrderBy();
+        int page = wrapper.getPage();
+        int perPage = wrapper.getPerPage();
+
         prepareSearchQuery(query, root, tagNames, textPart);
 
-        boolean isOrderByCorrect = Stream.of(CertificateOrderBy.values())
-                .anyMatch(value -> value.getOrderByFieldName()
-                        .equals(orderBy));
-        if (isOrderByCorrect) {
+        if (orderBy != null) {
             query.orderBy(cb.asc(root.get(orderBy)));
         }
 
@@ -74,10 +73,17 @@ public class CertificateDao {
                 .getResultList();
     }
 
-    public int getTotalElementsCountFromCertificateSearch(List<String> tagNames, String textPart) {
+    public int getTotalElementsCountFromCertificateSearch(CertificateParamWrapper wrapper) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<Certificate> root = query.from(Certificate.class);
+
+        List<String> tagNames = Collections.emptyList();
+        String[] tagNamesArray = wrapper.getTagNames();
+        if(tagNamesArray != null) {
+            tagNames = Arrays.asList(tagNamesArray);
+        }
+        String textPart = wrapper.getTextPart();
 
         prepareSearchQuery(query, root, tagNames, textPart);
 
