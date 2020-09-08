@@ -149,7 +149,7 @@ public class CertificateService {
         int perPage = wrapper.getPerPage();
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, totalElements);
         long totalPages = pageMetadata.getTotalPages();
-        if(totalPages < page) {
+        if(totalPages < page && totalPages != 0) {
             throw new IllegalArgumentException("Invalid page number. There is only " + totalPages + " page/pages");
         }
         return PagedModel.of(resultList, pageMetadata);

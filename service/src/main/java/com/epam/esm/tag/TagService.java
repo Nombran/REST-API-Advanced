@@ -51,11 +51,12 @@ public class TagService {
         }
     }
 
-    public PagedModel<TagDto> findTags(Integer page, Integer perPage) {
-        List<TagDto> tags = tagDao.findTags(page, perPage).stream()
+    public PagedModel<TagDto> findTags(Integer page, Integer perPage, String textPart) {
+        List<TagDto> tags = tagDao.findTags(page, perPage, textPart).stream()
                 .map(tag -> modelMapper.map(tag,TagDto.class))
                 .collect(Collectors.toList());
-        return PagedModel.of(tags, new PagedModel.PageMetadata(perPage,page,tagDao.getCountOfTags()));
+        long countOfTags = tagDao.getCountOfTags(textPart);
+        return PagedModel.of(tags, new PagedModel.PageMetadata(perPage,page,countOfTags));
     }
 
     public List<TagDto> findTagsByCertificateId(long id) {

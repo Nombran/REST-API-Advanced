@@ -24,7 +24,7 @@ import java.util.List;
 @Table(name = "certificate")
 public class Certificate {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
     @NonNull
     @Column(name = "name")

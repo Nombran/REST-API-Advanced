@@ -58,16 +58,17 @@ public class TagController {
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public PagedModel<TagDto> findTags(@RequestParam(name = "page", required = false, defaultValue = "1")
                                      @Min(value = 1, message = "page number must be greater or equal to 1")
                                              Integer page,
                                  @RequestParam(name = "perPage", required = false, defaultValue = "50")
                                      @Min(value = 1, message = "perPage param must be greater or equal to 1")
-                                             Integer perPage) {
-        PagedModel<TagDto> model = tagService.findTags(page, perPage);
+                                             Integer perPage,
+                                       @RequestParam(name = "textPart", required = false)
+                                       String textPart) {
+        PagedModel<TagDto> model = tagService.findTags(page, perPage, textPart);
         model.getContent().forEach(tagHateoasUtil::createSelfRel);
-        tagHateoasUtil.createPaginationLinks(model);
+        tagHateoasUtil.createPaginationLinks(model, textPart);
         return model;
     }
 
