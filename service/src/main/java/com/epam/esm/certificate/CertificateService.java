@@ -14,10 +14,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -133,6 +130,13 @@ public class CertificateService {
     }
 
     public PagedModel<CertificateDto> findCertificates(CertificateParamWrapper wrapper) {
+        if(wrapper.getStatuses() != null && wrapper.getStatuses().length !=0) {
+            CertificateStatus[] statuses = Arrays
+                    .stream(wrapper.getStatuses())
+                    .distinct()
+                    .toArray(CertificateStatus[]::new);
+            wrapper.setStatuses(statuses);
+        }
         String orderBy = wrapper.getOrderBy();
         boolean isOrderByCorrect = Stream.of(CertificateOrderBy.values())
                 .anyMatch(value -> value.getOrderByFieldName()

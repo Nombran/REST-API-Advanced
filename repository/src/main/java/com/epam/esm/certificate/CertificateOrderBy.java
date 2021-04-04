@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum CertificateOrderBy {
     ID("id"),
-    CREATION_DATE("creation_date"),
-    MODIFICATION_DATE("modification_date"),
+    CREATION_DATE("creationDate"),
+    MODIFICATION_DATE("modificationDate"),
     NAME("name"),
     DESCRIPTION("description"),
     PRICE("price"),

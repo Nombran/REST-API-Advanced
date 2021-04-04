@@ -17,7 +17,7 @@ import java.util.Optional;
 public class OrderDao {
     @PersistenceContext
     private final EntityManager em;
-    private static final String SQL_FIND_ORDER_BY_USER_ID = "select o from Order o where o.user.id =: id";
+    private static final String SQL_FIND_ORDER_BY_USER_ID = "select o from Order o where o.user.id =: id order by o.purchaseDate desc ";
     private static final String SQL_COUNT_OF_ORDERS = "select count(o) from Order o where o.user.id =: id";
     private static final String SQL_FIND_BY_USER_ID_AND_ORDER_ID = "select o from Order o where o.id =: orderId " +
             "and o.user.id =: userId";

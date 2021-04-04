@@ -1,8 +1,8 @@
 package com.epam.esm.certificate;
 
-import com.epam.esm.tag.TagHateoasUtil;
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDto;
+import com.epam.esm.tag.TagHateoasUtil;
 import com.epam.esm.tag.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
@@ -77,8 +77,8 @@ public class CertificateController {
      * @param tagNames represents names of tags, connected with certificate
      * @param textPart represents part of full certificate's description
      * @param orderBy  represents field name for ordering by
-     * @param page represents page number
-     * @param perPage represents number of certificate's items per page
+     * @param page     represents page number
+     * @param perPage  represents number of certificate's items per page
      * @return PageModel object with list of certificatesDto objects, which match to all request params<br>
      * and PageMetadata info
      * @see CertificateDto
@@ -99,12 +99,14 @@ public class CertificateController {
                                                                Integer page,
                                                        @RequestParam(name = "perPage", required = false, defaultValue = "50")
                                                        @Min(value = 1, message = "perPage param must be greater or equal to 1")
-                                                               Integer perPage
+                                                               Integer perPage,
+                                                       @RequestParam(name = "statuses", required = false)
+                                                               CertificateStatus[] statuses
     ) {
-        CertificateParamWrapper wrapper = new CertificateParamWrapper(tagNames, textPart, orderBy, page, perPage);
-        PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(wrapper);
-        certificateHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
-        return pagedModel;
+            CertificateParamWrapper wrapper = new CertificateParamWrapper(tagNames, textPart, orderBy, page, perPage, statuses);
+            PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(wrapper);
+            certificateHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy, statuses);
+            return pagedModel;
     }
 
     /**
@@ -161,7 +163,7 @@ public class CertificateController {
      * </p>
      *
      * @param certificateDto represents certificate fields<br>
-     * @param id          represents id of the certificate.
+     * @param id             represents id of the certificate.
      * @see CertificateDto
      */
     @PatchMapping(value = "/{id}")
@@ -204,11 +206,11 @@ public class CertificateController {
      */
     @GetMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.OK)
-    @Secured({"ROLE_USER","ROLE_ADMIN"})
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public CollectionModel<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
-       CollectionModel<TagDto> tags =  CollectionModel.of(tagService.findTagsByCertificateId(id));
-       tagHateoasUtil.createCertificateTagsLinks(tags,id);
-       return tags;
+        CollectionModel<TagDto> tags = CollectionModel.of(tagService.findTagsByCertificateId(id));
+        tagHateoasUtil.createCertificateTagsLinks(tags, id);
+        return tags;
     }
 
     /**

@@ -1,10 +1,12 @@
 package com.epam.esm.user;
 
+import com.epam.esm.jwt.JwtUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -111,6 +113,15 @@ public class UserController {
     public UserDto update(@Valid @RequestBody UserDto userDto, @PathVariable("id") long id) {
         UserDto updated = userService.update(userDto,id);
         return userHateoasUtil.createSingleUserLinks(updated);
+    }
+
+    @GetMapping(value = "/me")
+    @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER","ROLE_ADMIN"})
+    public UserDto getUserByToken(Authentication authentication) {
+        JwtUser user = (JwtUser)authentication.getPrincipal();
+        UserDto userDto = userService.find(user.getId());
+        return userHateoasUtil.createSingleUserLinks(userDto);
     }
 
     /**

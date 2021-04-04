@@ -11,20 +11,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class CertificateHateoasUtil {
 
     public void createPaginationLinks(PagedModel<CertificateDto> model, String[] tagNames, String textPart,
-                                      String orderBy) {
+                                      String orderBy, CertificateStatus[] statuses) {
         PagedModel.PageMetadata metadata = model.getMetadata();
         int curPage = (int)metadata.getNumber();
         int size = (int)metadata.getSize();
         int totalPages = (int)metadata.getTotalPages();
         if(curPage < totalPages) {
             String nextPageHref = linkTo(methodOn(CertificateController.class)
-                    .findCertificates(tagNames, textPart, orderBy,curPage + 1, size))
+                    .findCertificates(tagNames, textPart, orderBy,curPage + 1, size, statuses))
                     .toUriComponentsBuilder()
                     .toUriString();
             nextPageHref = nextPageHref.replaceAll("\\{.*?}", "");
             Link nextPage = Link.of(nextPageHref, "next");
             String lastPageHref = linkTo(methodOn(CertificateController.class)
-                    .findCertificates(tagNames, textPart, orderBy, totalPages, size))
+                    .findCertificates(tagNames, textPart, orderBy, totalPages, size, statuses))
                     .toUriComponentsBuilder()
                     .toUriString();
             lastPageHref = lastPageHref.replaceAll("\\{.*?}", "");
@@ -33,7 +33,7 @@ public class CertificateHateoasUtil {
         }
         if(curPage > 1) {
             String prevPageHref = linkTo(methodOn(CertificateController.class)
-                    .findCertificates(tagNames, textPart, orderBy, curPage - 1 , size))
+                    .findCertificates(tagNames, textPart, orderBy, curPage - 1 , size, statuses))
                     .toUriComponentsBuilder()
                     .toUriString();
             prevPageHref = prevPageHref.replaceAll("\\{.*?}", "");
@@ -41,7 +41,7 @@ public class CertificateHateoasUtil {
             model.add(prevPage);
         }
         String selfRelHref = linkTo(methodOn(CertificateController.class)
-                .findCertificates(tagNames, textPart, orderBy, curPage, size))
+                .findCertificates(tagNames, textPart, orderBy, curPage, size, statuses))
                 .toUriComponentsBuilder()
                 .toUriString();
         selfRelHref = selfRelHref.replaceAll("\\{.*?}", "");

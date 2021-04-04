@@ -71,7 +71,7 @@ public class TagDao {
         CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
         Root<Tag> root = query.from(Tag.class);
         if(textPart != null) {
-            predicates.add(cb.like(root.get(Tag_.NAME), "%" + textPart + "%"));
+            predicates.add(cb.like(cb.lower(root.get(Tag_.NAME)), "%" + textPart + "%"));
         }
         query.where(cb.and(predicates.toArray(new Predicate[0])));
         return query;

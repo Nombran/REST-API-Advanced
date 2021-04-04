@@ -31,7 +31,7 @@ public class CertificateDto extends RepresentationModel<CertificateDto> {
     private String name;
     @NonNull
     @NotBlank
-    @Size(min = 5, max = 50)
+    @Size(min = 5, max = 150)
     private String description;
     @NonNull
     @DecimalMin(value = "0.0")

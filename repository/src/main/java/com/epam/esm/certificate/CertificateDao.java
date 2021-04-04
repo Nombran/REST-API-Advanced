@@ -56,15 +56,22 @@ public class CertificateDao {
         if(tagNamesArray != null) {
             tagNames = Arrays.asList(tagNamesArray);
         }
+
+        CertificateStatus[] statusArray = wrapper.getStatuses();
+        List<CertificateStatus> statuses = null;
+        if(statusArray != null) {
+            statuses = Arrays.asList(statusArray);
+        }
+
         String textPart = wrapper.getTextPart();
         String orderBy = wrapper.getOrderBy();
         int page = wrapper.getPage();
         int perPage = wrapper.getPerPage();
 
-        prepareSearchQuery(query, root, tagNames, textPart);
+        prepareSearchQuery(query, root, tagNames, textPart, statuses);
 
         if (orderBy != null) {
-            query.orderBy(cb.asc(root.get(orderBy)));
+            query.orderBy(cb.desc(root.get(orderBy)));
         }
 
         return em.createQuery(query)
@@ -83,9 +90,16 @@ public class CertificateDao {
         if(tagNamesArray != null) {
             tagNames = Arrays.asList(tagNamesArray);
         }
+
+        CertificateStatus[] statusArray = wrapper.getStatuses();
+        List<CertificateStatus> statuses = null;
+        if(statusArray != null) {
+            statuses = Arrays.asList(statusArray);
+        }
+
         String textPart = wrapper.getTextPart();
 
-        prepareSearchQuery(query, root, tagNames, textPart);
+        prepareSearchQuery(query, root, tagNames, textPart, statuses);
 
         query.select(cb.countDistinct(root));
 
@@ -100,15 +114,20 @@ public class CertificateDao {
     }
 
     public <X> void prepareSearchQuery(AbstractQuery<X> query, Root<Certificate> root,
-                                       List<String> tagNames, String textPart) {
+                                       List<String> tagNames, String textPart, List<CertificateStatus> statuses) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         List<Predicate> predicates = new ArrayList<>();
 
         if (textPart != null && !textPart.isEmpty()) {
-            Predicate predicateForName = cb.like(root.get(Certificate_.NAME), "%" + textPart + "%");
+            Predicate predicateForName = cb.like(cb.lower(root.get(Certificate_.NAME)), "%" + textPart + "%");
             Predicate predicateForDescription = cb.like(root.get(Certificate_.description), "%" + textPart + "%");
             Predicate textPartPredicate = cb.or(predicateForName, predicateForDescription);
             predicates.add(textPartPredicate);
+        }
+
+        if(statuses != null && !statuses.isEmpty()) {
+            Predicate statusPredicate = root.get(Certificate_.status).in(statuses);
+            predicates.add(statusPredicate);
         }
 
         if (tagNames != null && tagNames.size() != 0) {
