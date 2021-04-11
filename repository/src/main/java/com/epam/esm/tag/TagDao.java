@@ -19,19 +19,19 @@ public class TagDao {
     @PersistenceContext
     private final EntityManager em;
     private static final String SQL_FIND_BY_CERTIFICATE_ID = "SELECT t from Tag t" +
-            " inner join t.certificates c where c.id =: id";
+            " inner join t.services c where c.id =: id";
     private static final String SQL_FIND_BY_NAME = "select t from Tag t where t.name =: name";
     private static final String SQL_VALUED_TAG = "select t.id , t.name from tag t\n" +
-            "                              inner join certificate_tag ct on t.id = ct.tag_id\n" +
-            "                              inner join certificate c on ct.certificate_id = c.id\n" +
-            "                              inner join order_certificate oc on c.id = oc.certificate_id\n" +
+            "                              inner join service_tag ct on t.id = ct.tag_id\n" +
+            "                              inner join service c on ct.service_id = c.id\n" +
+            "                              inner join order_service oc on c.id = oc.service_id\n" +
             "                              inner join orders o on oc.order_id = o.id\n" +
             "                              inner join users u on o.user_id = u.id\n" +
             "where u.id = (select rm.l from (SELECT u.id l, SUM(o.total_price) SumPrice\n" +
             "                                FROM users u\n" +
             "                                         inner join orders o on u.id = o.user_id\n" +
-            "                                         inner join order_certificate on o.id = order_certificate.order_id\n" +
-            "                                         inner join certificate c on order_certificate.certificate_id = c.id\n" +
+            "                                         inner join order_service on o.id = order_service.order_id\n" +
+            "                                         inner join service c on order_service.service_id = c.id\n" +
             "                                GROUP BY u.id order by SumPrice desc limit 1) rm)  group by t.id order by count(t.id)\n" +
             "    desc limit 1";
 

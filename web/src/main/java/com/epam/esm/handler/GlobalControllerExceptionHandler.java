@@ -1,9 +1,7 @@
 package com.epam.esm.handler;
 
-import com.epam.esm.certificate.CertificateConflictException;
-import com.epam.esm.certificate.CertificateNotFoundException;
-import com.epam.esm.order.OrderConflictException;
-import com.epam.esm.order.OrderNotFoundException;
+import com.epam.esm.service.ServiceConflictException;
+import com.epam.esm.service.ServiceNotFoundException;
 import com.epam.esm.tag.TagNotFoundException;
 import com.epam.esm.user.UserNotFoundException;
 import org.modelmapper.MappingException;
@@ -89,11 +87,10 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({CertificateNotFoundException.class,
+    @ExceptionHandler({ServiceNotFoundException.class,
             NoHandlerFoundException.class,
             TagNotFoundException.class,
             UserNotFoundException.class,
-            OrderNotFoundException.class
     })
     public ErrorResponse handleResourceNotFound(Exception ex) {
         ErrorResponse error = new ErrorResponse();
@@ -105,8 +102,7 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler({CertificateConflictException.class,
-            OrderConflictException.class})
+    @ExceptionHandler({ServiceConflictException.class})
     public ErrorResponse handleServiceConflictException(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());

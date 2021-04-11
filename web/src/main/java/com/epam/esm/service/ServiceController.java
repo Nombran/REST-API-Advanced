@@ -1,4 +1,4 @@
-package com.epam.esm.certificate;
+package com.epam.esm.service;
 
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDto;
@@ -24,7 +24,7 @@ import javax.validation.constraints.Min;
 @Validated
 @RestController
 @RequestMapping(value = "/api/v1/certificates")
-public class CertificateController {
+public class ServiceController {
 
     /**
      * Field certificateService
@@ -43,9 +43,9 @@ public class CertificateController {
     /**
      * Field certificateHateoasUtil
      *
-     * @see CertificateHateoasUtil
+     * @see ServiceHateoasUtil
      */
-    private final CertificateHateoasUtil certificateHateoasUtil;
+    private final ServiceHateoasUtil serviceHateoasUtil;
 
     /**
      * Field TagHateoasUtil
@@ -55,13 +55,13 @@ public class CertificateController {
     private final TagHateoasUtil tagHateoasUtil;
 
     @Autowired
-    public CertificateController(CertificateService certificateService,
-                                 TagService tagService,
-                                 CertificateHateoasUtil certificateHateoasUtil,
-                                 TagHateoasUtil tagHateoasUtil) {
+    public ServiceController(CertificateService certificateService,
+                             TagService tagService,
+                             ServiceHateoasUtil serviceHateoasUtil,
+                             TagHateoasUtil tagHateoasUtil) {
         this.certificateService = certificateService;
         this.tagService = tagService;
-        this.certificateHateoasUtil = certificateHateoasUtil;
+        this.serviceHateoasUtil = serviceHateoasUtil;
         this.tagHateoasUtil = tagHateoasUtil;
     }
 
@@ -81,31 +81,31 @@ public class CertificateController {
      * @param perPage  represents number of certificate's items per page
      * @return PageModel object with list of certificatesDto objects, which match to all request params<br>
      * and PageMetadata info
-     * @see CertificateDto
-     * @see Certificate
-     * @see CertificateParamWrapper
-     * @see CertificateHateoasUtil
+     * @see ServiceDto
+     * @see Service
+     * @see ServiceParamWrapper
+     * @see ServiceHateoasUtil
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public PagedModel<CertificateDto> findCertificates(@RequestParam(name = "tagNames", required = false)
+    public PagedModel<ServiceDto> findCertificates(@RequestParam(name = "tagNames", required = false)
                                                                String[] tagNames,
-                                                       @RequestParam(name = "textPart", required = false)
+                                                   @RequestParam(name = "textPart", required = false)
                                                                String textPart,
-                                                       @RequestParam(name = "orderBy", required = false, defaultValue = "id")
+                                                   @RequestParam(name = "orderBy", required = false, defaultValue = "id")
                                                                String orderBy,
-                                                       @RequestParam(name = "page", required = false, defaultValue = "1")
+                                                   @RequestParam(name = "page", required = false, defaultValue = "1")
                                                        @Min(value = 1, message = "page number must be greater or equal to 1")
                                                                Integer page,
-                                                       @RequestParam(name = "perPage", required = false, defaultValue = "50")
+                                                   @RequestParam(name = "perPage", required = false, defaultValue = "50")
                                                        @Min(value = 1, message = "perPage param must be greater or equal to 1")
                                                                Integer perPage,
-                                                       @RequestParam(name = "statuses", required = false)
-                                                               CertificateStatus[] statuses
+                                                   @RequestParam(name = "statuses", required = false)
+                                                               ServiceStatus[] statuses
     ) {
-            CertificateParamWrapper wrapper = new CertificateParamWrapper(tagNames, textPart, orderBy, page, perPage, statuses);
-            PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(wrapper);
-            certificateHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy, statuses);
+            ServiceParamWrapper wrapper = new ServiceParamWrapper(tagNames, textPart, orderBy, page, perPage, statuses);
+            PagedModel<ServiceDto> pagedModel = certificateService.findCertificates(wrapper);
+            serviceHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy, statuses);
             return pagedModel;
     }
 
@@ -120,15 +120,15 @@ public class CertificateController {
      *
      * @param certificate represents dto object, which contain certificate<br>
      *                    information and list of it's tags.
-     * @see CertificateDto
-     * @see CertificateHateoasUtil
+     * @see ServiceDto
+     * @see ServiceHateoasUtil
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Secured("ROLE_ADMIN")
-    public CertificateDto create(@Valid @RequestBody CertificateDto certificate) {
-        CertificateDto certificateDto = certificateService.create(certificate);
-        return certificateHateoasUtil.createSelfRelLink(certificateDto);
+    public ServiceDto create(@Valid @RequestBody ServiceDto certificate) {
+        ServiceDto serviceDto = certificateService.create(certificate);
+        return serviceHateoasUtil.createSelfRelLink(serviceDto);
     }
 
     /**
@@ -143,12 +143,12 @@ public class CertificateController {
      * @param certificate represents dto object, which contain certificate<br>
      *                    information and list of it's tags.
      * @param id          represents id of the certificate.
-     * @see CertificateDto
+     * @see ServiceDto
      */
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Secured("ROLE_ADMIN")
-    public void update(@Valid @RequestBody CertificateDto certificate, @PathVariable("id") long id) {
+    public void update(@Valid @RequestBody ServiceDto certificate, @PathVariable("id") long id) {
         certificate.setId(id);
         certificateService.update(certificate);
     }
@@ -162,15 +162,15 @@ public class CertificateController {
      * Response 200 (application/json).
      * </p>
      *
-     * @param certificateDto represents certificate fields<br>
+     * @param serviceDto represents certificate fields<br>
      * @param id             represents id of the certificate.
-     * @see CertificateDto
+     * @see ServiceDto
      */
     @PatchMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Secured("ROLE_ADMIN")
-    public void patch(@PathVariable("id") long id, @RequestBody CertificateDto certificateDto) {
-        certificateService.patch(id, certificateDto);
+    public void patch(@PathVariable("id") long id, @RequestBody ServiceDto serviceDto) {
+        certificateService.patch(id, serviceDto);
     }
 
     /**
@@ -184,12 +184,12 @@ public class CertificateController {
      * @param id represents id of the certificate.
      * @return certificateDto object, which contain all certificate<br>
      * information and list of it's tags.
-     * @see CertificateDto
+     * @see ServiceDto
      */
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CertificateDto findById(@PathVariable("id") long id) {
-        return certificateHateoasUtil.createSelfRelLink(certificateService.find(id));
+    public ServiceDto findById(@PathVariable("id") long id) {
+        return serviceHateoasUtil.createSelfRelLink(certificateService.find(id));
     }
 
     /**
@@ -242,7 +242,7 @@ public class CertificateController {
      *
      * @param certificateId represents id of the certificate.
      * @param tagId         represents id of the tag.
-     * @see Certificate
+     * @see Service
      * @see Tag
      */
     @DeleteMapping(value = "/{id}/tags/{tagId}")

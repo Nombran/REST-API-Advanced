@@ -3,6 +3,7 @@ package com.epam.esm.user;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +25,7 @@ public class UserDtoMapper {
     public void setupMapper() {
         mapper.createTypeMap(User.class, UserDto.class)
                 .addMappings(m -> m.skip(UserDto::setPassword)).setPostConverter(toDtoConverter());
-        mapper.createTypeMap(UserDto.class, User.class)
-                .addMappings(m-> m.skip(User::setOrders)).setPostConverter(toEntityConverter());
+        mapper.createTypeMap(UserDto.class, User.class).setPostConverter(toEntityConverter());
     }
 
     public Converter<User, UserDto> toDtoConverter() {
@@ -54,6 +54,10 @@ public class UserDtoMapper {
         if(password != null) {
             destination.setPassword(passwordEncoder.encode(password));
         }
-        destination.setRole(Role.ROLE_USER);
+        destination.setRole(Role.ROLE_ADMIN);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new BCryptPasswordEncoder().encode("password"));
     }
 }

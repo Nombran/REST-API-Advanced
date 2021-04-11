@@ -1,6 +1,9 @@
 package com.epam.esm.user;
 
 import com.epam.esm.jwt.JwtUser;
+import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.ServiceDto;
+import com.epam.esm.service.ServiceHateoasUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 /**
  * Class UserController for Rest Api Advanced Task.
@@ -37,11 +41,19 @@ public class UserController {
      */
     private final UserHateoasUtil userHateoasUtil;
 
+    private CertificateService certificateService;
+
+    private final ServiceHateoasUtil serviceHateoasUtil;
+
     @Autowired
     public UserController(UserService userService,
-                          UserHateoasUtil userHateoasUtil) {
+                          UserHateoasUtil userHateoasUtil,
+                          CertificateService certificateService,
+                          ServiceHateoasUtil serviceHateoasUtil) {
         this.userService = userService;
         this.userHateoasUtil = userHateoasUtil;
+        this.certificateService = certificateService;
+        this.serviceHateoasUtil = serviceHateoasUtil;
     }
 
     /**
@@ -142,5 +154,14 @@ public class UserController {
     public UserDto findById(@PathVariable("id")long id) {
         UserDto userDto = userService.find(id);
         return userHateoasUtil.createSingleUserLinks(userDto);
+    }
+
+    @GetMapping(value = "/{id}/services/created")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #id")
+    public PagedModel<ServiceDto> getCreatedServices(@PathVariable("id")long id) {
+        PagedModel<ServiceDto> serviceDtos = certificateService.getUserCreatedServices(id);
+        this.serviceHateoasUtil.createPaginationLinks(serviceDtos, null, null, null, null);
+        return serviceDtos;
     }
 }

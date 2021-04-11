@@ -1,9 +1,9 @@
-package com.epam.esm.certificate;
+package com.epam.esm.service;
 
 import lombok.Getter;
 
 @Getter
-public enum CertificateOrderBy {
+public enum ServiceOrderBy {
     ID("id"),
     CREATION_DATE("creationDate"),
     MODIFICATION_DATE("modificationDate"),
@@ -14,7 +14,7 @@ public enum CertificateOrderBy {
 
     private final String orderByFieldName;
 
-    CertificateOrderBy(String orderByFieldName) {
+    ServiceOrderBy(String orderByFieldName) {
         this.orderByFieldName = orderByFieldName;
     }
 }

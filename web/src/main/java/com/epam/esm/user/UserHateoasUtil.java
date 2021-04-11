@@ -1,6 +1,5 @@
 package com.epam.esm.user;
 
-import com.epam.esm.order.OrderController;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Component;
 
@@ -38,9 +37,6 @@ public class UserHateoasUtil {
         userDto.add(linkTo(methodOn(UserController.class)
                 .findById(userDto.getId()))
                 .withSelfRel());
-        userDto.add(linkTo(methodOn(OrderController.class)
-                .getUserOrders(1,50,null))
-                .withRel("userOrders"));
     }
 
     public UserDto createSingleUserLinks(UserDto userDto) {
@@ -51,9 +47,6 @@ public class UserHateoasUtil {
                 .findUsers(null, null))
                 .withRel("allUsers")
                 .expand());
-        userDto.add(linkTo(methodOn(OrderController.class)
-                .getUserOrders(1,50, null))
-                .withRel("usersOrders"));
         return userDto;
     }
 }

@@ -1,6 +1,6 @@
 package com.epam.esm.user;
 
-import com.epam.esm.order.Order;
+import com.epam.esm.service.Service;
 import lombok.*;
 
 import javax.persistence.*;
@@ -29,6 +29,13 @@ public class User {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "user")
-    private List<Order> orders;
+    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "creator")
+    private List<Service> createdServices;
+    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinTable(name = "user_desired_services",
+            joinColumns = {@JoinColumn(name = "user_id", nullable = false)},
+            inverseJoinColumns = {@JoinColumn(name = "service_id", nullable = false)})
+    private List<Service> desiredServices;
+    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "developer")
+    private List<Service> takenServices;
 }

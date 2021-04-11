@@ -1,6 +1,6 @@
 package com.epam.esm.tag;
 
-import com.epam.esm.certificate.CertificateController;
+import com.epam.esm.service.ServiceController;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
@@ -76,7 +76,7 @@ public class TagHateoasUtil {
 
     public void createCertificateTagsLinks(CollectionModel<TagDto> tags, long certificateId) {
         tags.getContent().forEach(this::createSelfRel);
-        tags.add(linkTo(methodOn(CertificateController.class)
+        tags.add(linkTo(methodOn(ServiceController.class)
                 .findAllCertificateTags(certificateId))
                 .withSelfRel());
     }

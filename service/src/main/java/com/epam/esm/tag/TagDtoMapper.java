@@ -20,7 +20,7 @@ public class TagDtoMapper {
     @PostConstruct
     public void setupMapper() {
         mapper.createTypeMap(TagDto.class, Tag.class)
-                .addMappings(m-> m.skip(Tag::setCertificates)).setPostConverter(toEntityConverter());
+                .addMappings(m-> m.skip(Tag::setServices)).setPostConverter(toEntityConverter());
     }
 
     public Converter<TagDto, Tag> toEntityConverter() {
@@ -32,6 +32,6 @@ public class TagDtoMapper {
     }
 
     public void mapSpecificFields(Tag destination) {
-        destination.setCertificates(Collections.emptyList());
+        destination.setServices(Collections.emptyList());
     }
 }
