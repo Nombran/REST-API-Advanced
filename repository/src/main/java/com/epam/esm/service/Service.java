@@ -40,12 +40,6 @@ public class Service {
     private LocalDateTime creationDate;
     @Column(name="modification_date")
     private LocalDateTime modificationDate;
-    @NonNull
-    @Column(name = "duration")
-    private int duration;
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private ServiceStatus status;
     @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(name = "service_tag",
             joinColumns = {@JoinColumn(name = "service_id", nullable = false)},

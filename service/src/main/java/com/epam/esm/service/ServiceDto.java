@@ -44,14 +44,6 @@ public class ServiceDto extends RepresentationModel<ServiceDto> {
     private LocalDateTime modificationDate;
     @NonNull
     @NotNull
-    @Min(1)
-    @Max(100)
-    private Integer duration;
-    @NonNull
-    @NotNull
-    private ServiceStatus status;
-    @NonNull
-    @NotNull
     private List<String> tags;
     @NonNull
     @NotNull
