@@ -38,7 +38,7 @@ public class ServiceServiceTest {
     @Test
     public void create_certificateWithTags_shouldReturnCertificateWithId() {
         //Given
-        Mockito.when(serviceDao.findNonInactiveCertificateByName("name")).thenReturn(Optional.empty());
+        Mockito.when(serviceDao.findCertificateByName("name")).thenReturn(Optional.empty());
         doAnswer(invocation -> {
             Service service = invocation.getArgument(0);
             service.setId(1);
@@ -74,7 +74,7 @@ public class ServiceServiceTest {
         //Given
         doAnswer((invocation) -> Optional.of(new Service()))
                 .when(serviceDao)
-                .findNonInactiveCertificateByName(anyString());
+                .findCertificateByName(anyString());
         ServiceDto serviceDto = new ServiceDto("name", "description", new BigDecimal("12.6"),
                 5, ServiceStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
 
@@ -158,7 +158,7 @@ public class ServiceServiceTest {
         }).when(serviceDao).find(anyLong());
         doAnswer((invocation -> Optional.of(new Service())))
                 .when(serviceDao)
-                .findNonInactiveCertificateByName("name");
+                .findCertificateByName("name");
         ServiceDto serviceDto = new ServiceDto("name", "description", new BigDecimal("12.6"),
                 5, ServiceStatus.PUBLISHED, Arrays.asList("tagOne", "tagTwo"));
 

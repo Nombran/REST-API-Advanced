@@ -19,9 +19,8 @@ import java.util.*;
 public class ServiceDao {
     @PersistenceContext
     private final EntityManager em;
-    private static final String SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME = "select c from Service c" +
-            " where c.status in(:active,:published)" +
-            " and c.name=:name";
+    private static final String SQL_FIND_CERTIFICATE_BY_NAME = "select c from Service c" +
+            " where c.name=:name";
 
     @Autowired
     public ServiceDao(EntityManager em) {
@@ -57,18 +56,12 @@ public class ServiceDao {
             tagNames = Arrays.asList(tagNamesArray);
         }
 
-        ServiceStatus[] statusArray = wrapper.getStatuses();
-        List<ServiceStatus> statuses = null;
-        if(statusArray != null) {
-            statuses = Arrays.asList(statusArray);
-        }
-
         String textPart = wrapper.getTextPart();
         String orderBy = wrapper.getOrderBy();
         int page = wrapper.getPage();
         int perPage = wrapper.getPerPage();
 
-        prepareSearchQuery(query, root, tagNames, textPart, statuses);
+        prepareSearchQuery(query, root, tagNames, textPart);
 
         if (orderBy != null) {
             query.orderBy(cb.desc(root.get(orderBy)));
@@ -91,15 +84,9 @@ public class ServiceDao {
             tagNames = Arrays.asList(tagNamesArray);
         }
 
-        ServiceStatus[] statusArray = wrapper.getStatuses();
-        List<ServiceStatus> statuses = null;
-        if(statusArray != null) {
-            statuses = Arrays.asList(statusArray);
-        }
-
         String textPart = wrapper.getTextPart();
 
-        prepareSearchQuery(query, root, tagNames, textPart, statuses);
+        prepareSearchQuery(query, root, tagNames, textPart);
 
         query.select(cb.countDistinct(root));
 
@@ -114,7 +101,7 @@ public class ServiceDao {
     }
 
     public <X> void prepareSearchQuery(AbstractQuery<X> query, Root<Service> root,
-                                       List<String> tagNames, String textPart, List<ServiceStatus> statuses) {
+                                       List<String> tagNames, String textPart) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         List<Predicate> predicates = new ArrayList<>();
 
@@ -123,11 +110,6 @@ public class ServiceDao {
             Predicate predicateForDescription = cb.like(root.get(Service_.description), "%" + textPart + "%");
             Predicate textPartPredicate = cb.or(predicateForName, predicateForDescription);
             predicates.add(textPartPredicate);
-        }
-
-        if(statuses != null && !statuses.isEmpty()) {
-            Predicate statusPredicate = root.get(Service_.status).in(statuses);
-            predicates.add(statusPredicate);
         }
 
         if (tagNames != null && tagNames.size() != 0) {
@@ -143,12 +125,10 @@ public class ServiceDao {
         }
     }
 
-    public Optional<Service> findNonInactiveCertificateByName(String name) {
+    public Optional<Service> findCertificateByName(String name) {
         TypedQuery<Service> typedQuery = em.createQuery(
-                SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME,
+                SQL_FIND_CERTIFICATE_BY_NAME,
                 Service.class);
-        typedQuery.setParameter("active", ServiceStatus.ACTIVE);
-        typedQuery.setParameter("published", ServiceStatus.PUBLISHED);
         typedQuery.setParameter("name", name);
         try {
             Service service = typedQuery.getSingleResult();

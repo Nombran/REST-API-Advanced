@@ -13,5 +13,4 @@ public class ServiceParamWrapper {
     private final String orderBy;
     private final int page;
     private final int perPage;
-    private ServiceStatus[] statuses;
 }

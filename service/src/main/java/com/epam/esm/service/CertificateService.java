@@ -14,7 +14,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +38,7 @@ public class CertificateService {
 
     public ServiceDto create(ServiceDto serviceDto) {
         String name = serviceDto.getName();
-        Optional<Service> certificateWithSuchName = serviceDao.findNonInactiveCertificateByName(name);
+        Optional<Service> certificateWithSuchName = serviceDao.findCertificateByName(name);
         if(certificateWithSuchName.isPresent()) {
             throw new ServiceConflictException("Certificate with name '" + name + "' already exists");
         }
@@ -49,35 +48,12 @@ public class CertificateService {
     }
 
     public void update(ServiceDto serviceDto) {
+        String name = serviceDto.getName();
+        Optional<Service> certificateWithSuchName = serviceDao.findCertificateByName(name);
+        if(certificateWithSuchName.isPresent()) {
+            throw new ServiceConflictException("Certificate with name '" + name + "' already exists");
+        }
         Service service = modelMapper.map(serviceDto, Service.class);
-        long certificateId = service.getId();
-        Service beforeUpdate = serviceDao.find(certificateId)
-                .orElseThrow(() -> new ServiceNotFoundException("Certificate with id "
-                        + service.getId() + " doesn't exist"));
-        ServiceStatus status = beforeUpdate.getStatus();
-        if(status == ServiceStatus.INACTIVE) {
-            throw new ServiceConflictException("Cannot update certificate with status " + status);
-        }
-        if(status == ServiceStatus.ACTIVE) {
-            int compareFieldsResult = Comparator.comparing(Service::getName)
-                    .thenComparing(Service::getDuration)
-                    .thenComparing(Service::getDescription)
-                    .thenComparing(Service::getPrice)
-                    .compare(service, beforeUpdate);
-            boolean compareTagsResult = beforeUpdate.getTags().containsAll(service.getTags());
-            if (!(compareFieldsResult == 0 && compareTagsResult && service.getStatus() == ServiceStatus.INACTIVE)) {
-                throw new ServiceConflictException("Certificate with status ACTIVE can be only set to INACTIVE");
-            }
-        }
-        String nameBeforeUpdate = beforeUpdate.getName();
-        String newName = service.getName();
-        if(!newName.equals(nameBeforeUpdate)) {
-            Optional<Service> certificateWithSuchName = serviceDao.findNonInactiveCertificateByName(newName);
-            if(certificateWithSuchName.isPresent()) {
-                throw new ServiceConflictException("Certificate with name '" + newName + "' already exists");
-            }
-        }
-        service.setCreationDate(beforeUpdate.getCreationDate());
         serviceDao.update(service);
     }
 
@@ -86,7 +62,6 @@ public class CertificateService {
                 new ServiceNotFoundException("Certificate with id = " + id + " doesn't exist")
         );
         ServiceDto serviceDto = modelMapper.map(service, ServiceDto.class);
-        mergeObjects(serviceDto, changes);
 
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<ServiceDto>> violations = validator.validate(serviceDto);
@@ -94,33 +69,6 @@ public class CertificateService {
             throw new ConstraintViolationException(violations);
         }
         update(serviceDto);
-    }
-
-    private void mergeObjects(ServiceDto certificate, ServiceDto changes) {
-        String newName = changes.getName();
-        String newDescription = changes.getDescription();
-        BigDecimal newPrice = changes.getPrice();
-        Integer newDuration = changes.getDuration();
-        ServiceStatus status = changes.getStatus();
-        List<String> newTags = changes.getTags();
-        if (newName != null) {
-            certificate.setName(newName);
-        }
-        if (newDescription != null) {
-            certificate.setDescription(newDescription);
-        }
-        if (newPrice != null) {
-            certificate.setPrice(newPrice);
-        }
-        if (newDuration != null) {
-            certificate.setDuration(newDuration);
-        }
-        if (newTags != null) {
-            certificate.setTags(newTags);
-        }
-        if(status != null) {
-            certificate.setStatus(status);
-        }
     }
 
     public ServiceDto find(long id) {
@@ -133,13 +81,6 @@ public class CertificateService {
     }
 
     public PagedModel<ServiceDto> findCertificates(ServiceParamWrapper wrapper) {
-        if(wrapper.getStatuses() != null && wrapper.getStatuses().length !=0) {
-            ServiceStatus[] statuses = Arrays
-                    .stream(wrapper.getStatuses())
-                    .distinct()
-                    .toArray(ServiceStatus[]::new);
-            wrapper.setStatuses(statuses);
-        }
         String orderBy = wrapper.getOrderBy();
         boolean isOrderByCorrect = Stream.of(ServiceOrderBy.values())
                 .anyMatch(value -> value.getOrderByFieldName()
@@ -166,10 +107,6 @@ public class CertificateService {
         Service service = serviceDao.find(certificateId)
                 .orElseThrow(() -> new ServiceNotFoundException("Certificate with id "
                         + certificateId + " doesn't exist"));
-        ServiceStatus status = service.getStatus();
-        if(status == ServiceStatus.ACTIVE || status == ServiceStatus.INACTIVE) {
-            throw new ServiceConflictException("Cannot update certificate with status " + status);
-        }
         Tag tag = modelMapper.map(tagDto, Tag.class);
         Tag tagToAdd = tagDao.findByName(tag.getName()).orElseGet(() -> {
             tagDao.create(tag);
@@ -187,10 +124,6 @@ public class CertificateService {
         Service service = serviceDao.find(certificateId)
                 .orElseThrow(() -> new ServiceNotFoundException("Certificate with id "
                         + certificateId + " doesn't exist"));
-        ServiceStatus status = service.getStatus();
-        if(status == ServiceStatus.ACTIVE || status == ServiceStatus.INACTIVE) {
-            throw new ServiceConflictException("Cannot update certificate with status " + status);
-        }
         List<Tag> certificateTags = service.getTags();
         if (certificateTags.stream()
                 .anyMatch(tag -> tag.getId() == tagId)) {
@@ -208,5 +141,12 @@ public class CertificateService {
                 .collect(Collectors.toList());
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(10, 1, 10);
         return PagedModel.of(serviceDtos, pageMetadata);
+    }
+
+    public List<ServiceDto> findFreeServices() {
+        return serviceDao.findCertificates(new ServiceParamWrapper(null, null, null, 1, 100))
+                .stream()
+                .map(certificate -> modelMapper.map(certificate, ServiceDto.class))
+                .collect(Collectors.toList());
     }
 }

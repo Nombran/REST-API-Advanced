@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 /**
  * Class CertificateController for Rest Api Advanced Task.
@@ -99,14 +100,18 @@ public class ServiceController {
                                                                Integer page,
                                                    @RequestParam(name = "perPage", required = false, defaultValue = "50")
                                                        @Min(value = 1, message = "perPage param must be greater or equal to 1")
-                                                               Integer perPage,
-                                                   @RequestParam(name = "statuses", required = false)
-                                                               ServiceStatus[] statuses
+                                                               Integer perPage
     ) {
-            ServiceParamWrapper wrapper = new ServiceParamWrapper(tagNames, textPart, orderBy, page, perPage, statuses);
+            ServiceParamWrapper wrapper = new ServiceParamWrapper(tagNames, textPart, orderBy, page, perPage);
             PagedModel<ServiceDto> pagedModel = certificateService.findCertificates(wrapper);
-            serviceHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy, statuses);
+            serviceHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
             return pagedModel;
+    }
+
+    @GetMapping(value = "/free")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ServiceDto> getFreeServices() {
+        return certificateService.findFreeServices();
     }
 
     /**

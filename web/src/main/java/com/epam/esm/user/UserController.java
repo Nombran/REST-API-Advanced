@@ -161,7 +161,7 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #id")
     public PagedModel<ServiceDto> getCreatedServices(@PathVariable("id")long id) {
         PagedModel<ServiceDto> serviceDtos = certificateService.getUserCreatedServices(id);
-        this.serviceHateoasUtil.createPaginationLinks(serviceDtos, null, null, null, null);
+        this.serviceHateoasUtil.createPaginationLinks(serviceDtos, null, null, null);
         return serviceDtos;
     }
 }

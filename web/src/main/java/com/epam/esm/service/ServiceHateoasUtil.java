@@ -11,20 +11,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ServiceHateoasUtil {
 
     public void createPaginationLinks(PagedModel<ServiceDto> model, String[] tagNames, String textPart,
-                                      String orderBy, ServiceStatus[] statuses) {
+                                      String orderBy) {
         PagedModel.PageMetadata metadata = model.getMetadata();
         int curPage = (int)metadata.getNumber();
         int size = (int)metadata.getSize();
         int totalPages = (int)metadata.getTotalPages();
         if(curPage < totalPages) {
             String nextPageHref = linkTo(methodOn(ServiceController.class)
-                    .findCertificates(tagNames, textPart, orderBy,curPage + 1, size, statuses))
+                    .findCertificates(tagNames, textPart, orderBy,curPage + 1, size))
                     .toUriComponentsBuilder()
                     .toUriString();
             nextPageHref = nextPageHref.replaceAll("\\{.*?}", "");
             Link nextPage = Link.of(nextPageHref, "next");
             String lastPageHref = linkTo(methodOn(ServiceController.class)
-                    .findCertificates(tagNames, textPart, orderBy, totalPages, size, statuses))
+                    .findCertificates(tagNames, textPart, orderBy, totalPages, size))
                     .toUriComponentsBuilder()
                     .toUriString();
             lastPageHref = lastPageHref.replaceAll("\\{.*?}", "");
@@ -33,7 +33,7 @@ public class ServiceHateoasUtil {
         }
         if(curPage > 1) {
             String prevPageHref = linkTo(methodOn(ServiceController.class)
-                    .findCertificates(tagNames, textPart, orderBy, curPage - 1 , size, statuses))
+                    .findCertificates(tagNames, textPart, orderBy, curPage - 1 , size))
                     .toUriComponentsBuilder()
                     .toUriString();
             prevPageHref = prevPageHref.replaceAll("\\{.*?}", "");
@@ -41,7 +41,7 @@ public class ServiceHateoasUtil {
             model.add(prevPage);
         }
         String selfRelHref = linkTo(methodOn(ServiceController.class)
-                .findCertificates(tagNames, textPart, orderBy, curPage, size, statuses))
+                .findCertificates(tagNames, textPart, orderBy, curPage, size))
                 .toUriComponentsBuilder()
                 .toUriString();
         selfRelHref = selfRelHref.replaceAll("\\{.*?}", "");
