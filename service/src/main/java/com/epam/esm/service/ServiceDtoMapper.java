@@ -4,6 +4,7 @@ import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDao;
 import com.epam.esm.user.User;
 import com.epam.esm.user.UserDao;
+import com.epam.esm.user.UserNotFoundException;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +33,12 @@ public class ServiceDtoMapper {
     public void setupMapper() {
         mapper.createTypeMap(Service.class, ServiceDto.class)
                 .addMappings(m -> m.skip(ServiceDto::setTags))
+                .addMappings(m -> m.skip(ServiceDto::setDesiredDevelopers))
                 .setPostConverter(toDtoConverter());
         mapper.createTypeMap(ServiceDto.class, Service.class)
                 .addMappings(m-> m.skip(Service::setTags))
                 .addMappings(m -> m.skip(Service::setCreator))
+                .addMappings(m -> m.skip(Service::setDesiredDevelopers))
                 .setPostConverter(toEntityConverter());
     }
 
@@ -68,6 +71,9 @@ public class ServiceDtoMapper {
         if(developer != null) {
             destination.setDeveloperId(developer.getId());
         }
+        List<User> desiredDevelopers = source.getDesiredDevelopers();
+        List<Long> desiredDevelopersIds = desiredDevelopers.stream().map(User::getId).collect(Collectors.toList());
+        destination.setDesiredDevelopers(desiredDevelopersIds);
     }
 
     public void mapSpecificFields(ServiceDto source, Service destination) throws ServiceNotFoundException {
@@ -91,5 +97,10 @@ public class ServiceDtoMapper {
                 .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
                 .collect(Collectors.toList());
         destination.setTags(tagsAsObjects);
+        List<Long> desiredDevelopersIds = source.getDesiredDevelopers();
+        List<User> desiredDevelopers = desiredDevelopersIds.stream().map(id -> userDao.find(id).orElseThrow(()->
+            new UserNotFoundException("user with id " + id + "doesn't exists")
+        )).collect(Collectors.toList());
+        destination.setDesiredDevelopers(desiredDevelopers);
     }
 }
