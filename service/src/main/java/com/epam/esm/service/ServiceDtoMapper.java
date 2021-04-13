@@ -72,8 +72,10 @@ public class ServiceDtoMapper {
             destination.setDeveloperId(developer.getId());
         }
         List<User> desiredDevelopers = source.getDesiredDevelopers();
-        List<Long> desiredDevelopersIds = desiredDevelopers.stream().map(User::getId).collect(Collectors.toList());
-        destination.setDesiredDevelopers(desiredDevelopersIds);
+        if(desiredDevelopers != null) {
+            List<Long> desiredDevelopersIds = desiredDevelopers.stream().map(User::getId).collect(Collectors.toList());
+            destination.setDesiredDevelopers(desiredDevelopersIds);
+        }
     }
 
     public void mapSpecificFields(ServiceDto source, Service destination) throws ServiceNotFoundException {
@@ -98,9 +100,11 @@ public class ServiceDtoMapper {
                 .collect(Collectors.toList());
         destination.setTags(tagsAsObjects);
         List<Long> desiredDevelopersIds = source.getDesiredDevelopers();
-        List<User> desiredDevelopers = desiredDevelopersIds.stream().map(id -> userDao.find(id).orElseThrow(()->
-            new UserNotFoundException("user with id " + id + "doesn't exists")
-        )).collect(Collectors.toList());
-        destination.setDesiredDevelopers(desiredDevelopers);
+        if(desiredDevelopersIds != null) {
+            List<User> desiredDevelopers = desiredDevelopersIds.stream().map(id -> userDao.find(id).orElseThrow(() ->
+                    new UserNotFoundException("user with id " + id + "doesn't exists")
+            )).collect(Collectors.toList());
+            destination.setDesiredDevelopers(desiredDevelopers);
+        }
     }
 }

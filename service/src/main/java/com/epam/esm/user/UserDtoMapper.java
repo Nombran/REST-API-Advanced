@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -67,7 +68,7 @@ public class UserDtoMapper {
         List<String> skills = source.getSkills();
         List<Tag> tagSkills = skills.stream().map(skill -> tagDao.findByName(skill).orElseGet(() -> {
             Tag newTag = new Tag(skill);
-            tagDao.create(new Tag(skill));
+            tagDao.create(newTag);
             return newTag;
         })).collect(Collectors.toList());
         destination.setSkills(tagSkills);
