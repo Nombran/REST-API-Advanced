@@ -48,11 +48,6 @@ public class CertificateService {
     }
 
     public void update(ServiceDto serviceDto) {
-        String name = serviceDto.getName();
-        Optional<Service> certificateWithSuchName = serviceDao.findCertificateByName(name);
-        if(certificateWithSuchName.isPresent()) {
-            throw new ServiceConflictException("Certificate with name '" + name + "' already exists");
-        }
         Service service = modelMapper.map(serviceDto, Service.class);
         serviceDao.update(service);
     }
