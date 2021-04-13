@@ -1,5 +1,6 @@
 package com.epam.esm.user;
 
+import com.epam.esm.service.ServiceConflictException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,14 @@ public class UserService {
     }
 
     public UserDto create(UserDto userDto) {
-        userDto.setId(0);
-        User user = modelMapper.map(userDto, User.class);
-        userDao.create(user);
-        return modelMapper.map(user, UserDto.class);
+            Optional<User> userWithLogin = userDao.findUserByLogin(userDto.getLogin());
+            if (userWithLogin.isPresent()) {
+                throw new ServiceConflictException("login already exists");
+            }
+            userDto.setId(0);
+            User user = modelMapper.map(userDto, User.class);
+            userDao.create(user);
+            return modelMapper.map(user, UserDto.class);
     }
 
     public UserDto update(UserDto userDto, long id) {

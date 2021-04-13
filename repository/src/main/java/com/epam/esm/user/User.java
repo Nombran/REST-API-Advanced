@@ -1,6 +1,7 @@
 package com.epam.esm.user;
 
 import com.epam.esm.service.Service;
+import com.epam.esm.tag.Tag;
 import lombok.*;
 
 import javax.persistence.*;
@@ -38,4 +39,19 @@ public class User {
     private List<Service> desiredServices;
     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "developer")
     private List<Service> takenServices;
+    @Column(name = "contacts")
+    private String contacts;
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "user_skills",
+            joinColumns = {@JoinColumn(name = "user_id", nullable = false)},
+            inverseJoinColumns = {@JoinColumn(name = "tag_id", nullable = false)})
+    private List<Tag> skills;
+    @Column(name = "specialization")
+    private String specialization;
+    @Column(name = "activity")
+    private String activity;
+    @Column(name = "salary")
+    private int salary;
+    @Column(name = "about")
+    private String about;
 }

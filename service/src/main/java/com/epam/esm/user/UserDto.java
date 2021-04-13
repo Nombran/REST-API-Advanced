@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
@@ -33,4 +35,10 @@ public class UserDto extends RepresentationModel<UserDto> {
     @NotBlank
     @Size(min = 5, max = 15)
     private String password;
+    private String contacts;
+    private List<String> skills;
+    private String specialization;
+    private String activity;
+    private int salary;
+    private String about;
 }
