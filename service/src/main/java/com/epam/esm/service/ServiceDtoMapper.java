@@ -98,6 +98,11 @@ public class ServiceDtoMapper {
                     .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
                     .collect(Collectors.toList());
             service.setTags(tagsAsObjects);
+            long creatorId = source.getCreatorId();
+            User creator = userDao.find(creatorId).orElseThrow(() ->
+                    new ServiceNotFoundException("user with id " + creatorId + "not found")
+            );
+            service.setCreator(creator);
         } else {
             long creatorId = source.getCreatorId();
             User creator = userDao.find(creatorId).orElseThrow(() ->
