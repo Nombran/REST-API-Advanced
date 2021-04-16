@@ -59,7 +59,7 @@ public class ServiceDtoMapper {
         return context -> {
             ServiceDto source = context.getSource();
             Service destination = context.getDestination();
-            mapSpecificFields(source, destination);
+            destination = mapSpecificFields(source, destination);
             return context.getDestination();
         };
     }
@@ -83,7 +83,7 @@ public class ServiceDtoMapper {
         }
     }
 
-    public void mapSpecificFields(ServiceDto source, Service destination) throws ServiceNotFoundException {
+    public Service mapSpecificFields(ServiceDto source, Service destination) throws ServiceNotFoundException {
         if(source.getId() != 0) {
             Service service = serviceDao.find(source.getId()).orElseThrow(()->
                     new ServiceNotFoundException("not found"));
@@ -103,7 +103,7 @@ public class ServiceDtoMapper {
                     new ServiceNotFoundException("user with id " + creatorId + "not found")
             );
             service.setCreator(creator);
-            destination = service;
+            return service;
         } else {
             long creatorId = source.getCreatorId();
             User creator = userDao.find(creatorId).orElseThrow(() ->
@@ -119,6 +119,7 @@ public class ServiceDtoMapper {
                     .collect(Collectors.toList());
             destination.setTags(tagsAsObjects);
             destination.setStatus(ServiceStatus.valueOf(source.getStatus()));
+            return destination;
         }
     }
 }
