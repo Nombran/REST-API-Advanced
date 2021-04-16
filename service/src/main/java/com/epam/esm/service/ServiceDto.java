@@ -52,5 +52,5 @@ public class ServiceDto extends RepresentationModel<ServiceDto> {
     private long creatorId;
     private UserDto developer;
     private List<UserDto> desiredDevelopers;
-    private ServiceStatus status;
+    private String status;
 }

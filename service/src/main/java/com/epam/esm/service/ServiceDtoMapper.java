@@ -73,6 +73,7 @@ public class ServiceDtoMapper {
             UserDto dtoDev = mapper.map(developer, UserDto.class);
             destination.setDeveloper(dtoDev);
         }
+        destination.setStatus(source.getStatus().name());
         List<User> desiredDevelopers = source.getDesiredDevelopers();
         if(desiredDevelopers != null) {
             destination.setDesiredDevelopers(desiredDevelopers.stream().map(dev -> mapper.map(dev, UserDto.class)).collect(Collectors.toList()));
@@ -93,5 +94,6 @@ public class ServiceDtoMapper {
                 .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
                 .collect(Collectors.toList());
         destination.setTags(tagsAsObjects);
+        destination.setStatus(ServiceStatus.valueOf(source.getStatus()));
     }
 }
