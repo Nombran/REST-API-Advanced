@@ -53,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
                 .antMatchers(HttpMethod.GET, FIND_CERTIFICATES_ENDPOINT).permitAll()
                 .antMatchers(HttpMethod.GET, FIND_CERTIFICATE_BY_ID).permitAll()
                 .antMatchers(HttpMethod.GET, FIND_TAGS_ENDPOINT).permitAll()
-                .anyRequest().fullyAuthenticated()
+                .anyRequest().permitAll()
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider))
                 .and().cors();

@@ -163,24 +163,25 @@ public class CertificateService {
         User dev = userDao.find(devId).orElseThrow(() ->
                 new UserNotFoundException("user with id" + devId + "not found")
         );
-        List<User> desiredDevs = service.getDesiredDevelopers();
-        if(desiredDevs == null) {
-            desiredDevs = new ArrayList<>();
+        List<Service> desiredServices = dev.getDesiredServices();
+        if(desiredServices == null) {
+            desiredServices = new ArrayList<>();
         }
-        desiredDevs.add(dev);
-        service.setDesiredDevelopers(desiredDevs);
-        serviceDao.update(service);
+
+        desiredServices.add(service);
+        dev.setDesiredServices(desiredServices);
+        userDao.update(dev);
     }
 
     public void deleteDesiredDev(int id, int devId) {
-        Service service = serviceDao.find(id).orElseThrow(()->
-                new ServiceNotFoundException("service with id" + id + "not found")
+        User dev = userDao.find(devId).orElseThrow(() ->
+                new UserNotFoundException("user with id" + devId + "not found")
         );
-        List<User> desiredDevs = service.getDesiredDevelopers();
-        if(desiredDevs == null) {
-            throw new ServiceNotFoundException("user with id" + devId + "not found");
+        List<Service> desiredServices = dev.getDesiredServices();
+        if(desiredServices == null) {
+            desiredServices = new ArrayList<>();
         }
-        service.setDesiredDevelopers(desiredDevs.stream().filter(user -> user.getId() != devId).collect(Collectors.toList()));
-        serviceDao.update(service);
+        dev.setDesiredServices(desiredServices.stream().filter(service -> service.getId() != id).collect(Collectors.toList()));
+        userDao.update(dev);
     }
 }

@@ -35,7 +35,7 @@ public class User {
     private Role role;
     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "creator")
     private List<Service> createdServices;
-    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinTable(name = "user_desired_services",
             joinColumns = {@JoinColumn(name = "user_id", nullable = false)},
             inverseJoinColumns = {@JoinColumn(name = "service_id", nullable = false)})

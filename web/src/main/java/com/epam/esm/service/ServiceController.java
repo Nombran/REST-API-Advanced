@@ -131,7 +131,6 @@ public class ServiceController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Secured("ROLE_ADMIN")
     public ServiceDto create(@Valid @RequestBody ServiceDto certificate) {
         ServiceDto serviceDto = certificateService.create(certificate);
         return serviceHateoasUtil.createSelfRelLink(serviceDto);
