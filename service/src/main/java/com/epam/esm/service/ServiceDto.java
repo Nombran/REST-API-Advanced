@@ -1,6 +1,7 @@
 package com.epam.esm.service;
 
 import com.epam.esm.user.User;
+import com.epam.esm.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -50,5 +51,5 @@ public class ServiceDto extends RepresentationModel<ServiceDto> {
     @NotNull
     private long creatorId;
     private long developerId;
-    private List<Long> desiredDevelopers;
+    private List<UserDto> desiredDevelopers;
 }

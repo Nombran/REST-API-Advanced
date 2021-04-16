@@ -4,6 +4,7 @@ import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDao;
 import com.epam.esm.user.User;
 import com.epam.esm.user.UserDao;
+import com.epam.esm.user.UserDto;
 import com.epam.esm.user.UserNotFoundException;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -73,8 +74,7 @@ public class ServiceDtoMapper {
         }
         List<User> desiredDevelopers = source.getDesiredDevelopers();
         if(desiredDevelopers != null) {
-            List<Long> desiredDevelopersIds = desiredDevelopers.stream().map(User::getId).collect(Collectors.toList());
-            destination.setDesiredDevelopers(desiredDevelopersIds);
+            destination.setDesiredDevelopers(desiredDevelopers.stream().map(dev -> mapper.map(dev, UserDto.class)).collect(Collectors.toList()));
         }
     }
 
@@ -99,12 +99,5 @@ public class ServiceDtoMapper {
                 .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
                 .collect(Collectors.toList());
         destination.setTags(tagsAsObjects);
-        List<Long> desiredDevelopersIds = source.getDesiredDevelopers();
-        if(desiredDevelopersIds != null) {
-            List<User> desiredDevelopers = desiredDevelopersIds.stream().map(id -> userDao.find(id).orElseThrow(() ->
-                    new UserNotFoundException("user with id " + id + "doesn't exists")
-            )).collect(Collectors.toList());
-            destination.setDesiredDevelopers(desiredDevelopers);
-        }
     }
 }
