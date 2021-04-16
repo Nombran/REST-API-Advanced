@@ -50,6 +50,6 @@ public class ServiceDto extends RepresentationModel<ServiceDto> {
     @NonNull
     @NotNull
     private long creatorId;
-    private long developerId;
+    private UserDto developer;
     private List<UserDto> desiredDevelopers;
 }

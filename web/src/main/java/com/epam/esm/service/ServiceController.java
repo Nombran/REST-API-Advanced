@@ -275,4 +275,10 @@ public class ServiceController {
     public void deleteDesiredDev(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
         certificateService.deleteDesiredDev(id, devId);
     }
+
+    @PostMapping(value = "/{id}/dev/{devId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void addDeveloper(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
+        certificateService.addDeveloper(id, devId);
+    }
 }

@@ -45,6 +45,7 @@ public class CertificateService {
             throw new ServiceConflictException("Certificate with name '" + name + "' already exists");
         }
         Service service = modelMapper.map(serviceDto, Service.class);
+        service.setStatus(ServiceStatus.PENDING);
         serviceDao.create(service);
         return modelMapper.map(service, ServiceDto.class);
     }
@@ -183,5 +184,17 @@ public class CertificateService {
         }
         dev.setDesiredServices(desiredServices.stream().filter(service -> service.getId() != id).collect(Collectors.toList()));
         userDao.update(dev);
+    }
+
+    public void addDeveloper(int id, int devId) {
+        User dev = userDao.find(devId).orElseThrow(() ->
+                new UserNotFoundException("user with id" + devId + "not found")
+        );
+        Service service = serviceDao.find(id).orElseThrow(()->
+                new ServiceNotFoundException("service with id" + id + "not found")
+        );
+        service.setDeveloper(dev);
+        service.setStatus(ServiceStatus.IN_PROGRESS);
+        serviceDao.update(service);
     }
 }

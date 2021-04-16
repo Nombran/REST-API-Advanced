@@ -1,6 +1,7 @@
 package com.epam.esm.service;
 
 import com.epam.esm.tag.Tag;
+import com.epam.esm.user.Role;
 import com.epam.esm.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -53,4 +54,7 @@ public class Service {
     private User developer;
     @ManyToMany(mappedBy = "desiredServices")
     private List<User> desiredDevelopers;
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ServiceStatus status;
 }

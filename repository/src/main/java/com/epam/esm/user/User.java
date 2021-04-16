@@ -40,7 +40,7 @@ public class User {
             joinColumns = {@JoinColumn(name = "user_id", nullable = false)},
             inverseJoinColumns = {@JoinColumn(name = "service_id", nullable = false)})
     private List<Service> desiredServices;
-    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "developer")
+    @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.MERGE}, fetch = FetchType.LAZY,mappedBy = "developer")
     private List<Service> takenServices;
     @Column(name = "contacts")
     private String contacts;

@@ -70,7 +70,8 @@ public class ServiceDtoMapper {
         destination.setCreatorId(creatorId);
         User developer = source.getDeveloper();
         if(developer != null) {
-            destination.setDeveloperId(developer.getId());
+            UserDto dtoDev = mapper.map(developer, UserDto.class);
+            destination.setDeveloper(dtoDev);
         }
         List<User> desiredDevelopers = source.getDesiredDevelopers();
         if(desiredDevelopers != null) {
@@ -84,13 +85,6 @@ public class ServiceDtoMapper {
             new ServiceNotFoundException("user with id " + creatorId + "not found")
         );
         destination.setCreator(creator);
-        long developerId = source.getDeveloperId();
-        if(developerId != 0) {
-            User developer = userDao.find(developerId).orElseThrow(() ->
-                new ServiceNotFoundException("user with id " + creatorId + "not found")
-            );
-            destination.setDeveloper(developer);
-        }
         List<String> tagsAsString = source.getTags()
                 .stream()
                 .distinct()
