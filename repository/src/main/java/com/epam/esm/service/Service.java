@@ -3,13 +3,7 @@ package com.epam.esm.service;
 import com.epam.esm.tag.Tag;
 import com.epam.esm.user.Role;
 import com.epam.esm.user.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -22,6 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 @Entity
 @Table(name = "service")
 public class Service {

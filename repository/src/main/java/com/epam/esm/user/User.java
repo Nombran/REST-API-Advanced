@@ -9,7 +9,6 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 //@RequiredArgsConstructor

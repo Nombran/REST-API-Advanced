@@ -152,7 +152,6 @@ public class ServiceController {
      */
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @Secured("ROLE_ADMIN")
     public void update(@Valid @RequestBody ServiceDto certificate, @PathVariable("id") long id) {
         certificate.setId(id);
         certificateService.update(certificate);

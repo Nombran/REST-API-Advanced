@@ -51,7 +51,19 @@ public class CertificateService {
     }
 
     public void update(ServiceDto serviceDto) {
-        Service service = modelMapper.map(serviceDto, Service.class);
+        Service service = serviceDao.find(serviceDto.getId()).orElseThrow(()->
+                new ServiceNotFoundException("not found"));
+        service.setName(serviceDto.getName());
+        service.setDescription(serviceDto.getDescription());
+        service.setPrice(serviceDto.getPrice());
+        List<String> tagsAsString = serviceDto.getTags()
+                .stream()
+                .distinct()
+                .collect(Collectors.toList());
+        List<Tag> tagsAsObjects = tagsAsString.stream()
+                .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
+                .collect(Collectors.toList());
+        service.setTags(tagsAsObjects);
         serviceDao.update(service);
     }
 

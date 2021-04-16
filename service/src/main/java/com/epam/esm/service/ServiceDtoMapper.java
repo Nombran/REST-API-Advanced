@@ -8,6 +8,7 @@ import com.epam.esm.user.UserDto;
 import com.epam.esm.user.UserNotFoundException;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.spi.MappingContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -103,6 +104,7 @@ public class ServiceDtoMapper {
                     new ServiceNotFoundException("user with id " + creatorId + "not found")
             );
             service.setCreator(creator);
+            System.err.println("it is here");
             return service;
         } else {
             long creatorId = source.getCreatorId();
