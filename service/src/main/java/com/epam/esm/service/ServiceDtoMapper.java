@@ -20,14 +20,17 @@ public class ServiceDtoMapper {
     private final ModelMapper mapper;
     private final TagDao tagDao;
     private final UserDao userDao;
+    private final ServiceDao serviceDao;
 
     @Autowired
     public ServiceDtoMapper(ModelMapper modelMapper,
                             TagDao tagDao,
-                            UserDao userDao) {
+                            UserDao userDao,
+                            ServiceDao serviceDao) {
         this.mapper = modelMapper;
         this.tagDao = tagDao;
         this.userDao = userDao;
+        this.serviceDao = serviceDao;
     }
 
     @PostConstruct
@@ -81,19 +84,35 @@ public class ServiceDtoMapper {
     }
 
     public void mapSpecificFields(ServiceDto source, Service destination) throws ServiceNotFoundException {
-        long creatorId = source.getCreatorId();
-        User creator = userDao.find(creatorId).orElseThrow(() ->
-            new ServiceNotFoundException("user with id " + creatorId + "not found")
-        );
-        destination.setCreator(creator);
-        List<String> tagsAsString = source.getTags()
-                .stream()
-                .distinct()
-                .collect(Collectors.toList());
-        List<Tag> tagsAsObjects = tagsAsString.stream()
-                .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
-                .collect(Collectors.toList());
-        destination.setTags(tagsAsObjects);
-        destination.setStatus(ServiceStatus.valueOf(source.getStatus()));
+        if(source.getId() != 0) {
+            Service service = serviceDao.find(source.getId()).orElseThrow(()->
+                    new ServiceNotFoundException("not found"));
+            service.setName(source.getName());
+            service.setDescription(source.getDescription());
+            service.setPrice(source.getPrice());
+            List<String> tagsAsString = source.getTags()
+                    .stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<Tag> tagsAsObjects = tagsAsString.stream()
+                    .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
+                    .collect(Collectors.toList());
+            service.setTags(tagsAsObjects);
+        } else {
+            long creatorId = source.getCreatorId();
+            User creator = userDao.find(creatorId).orElseThrow(() ->
+                    new ServiceNotFoundException("user with id " + creatorId + "not found")
+            );
+            destination.setCreator(creator);
+            List<String> tagsAsString = source.getTags()
+                    .stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<Tag> tagsAsObjects = tagsAsString.stream()
+                    .map(name -> tagDao.findByName(name).orElse(new Tag(name)))
+                    .collect(Collectors.toList());
+            destination.setTags(tagsAsObjects);
+            destination.setStatus(ServiceStatus.valueOf(source.getStatus()));
+        }
     }
 }
