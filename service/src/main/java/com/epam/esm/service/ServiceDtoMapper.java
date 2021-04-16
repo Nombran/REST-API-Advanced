@@ -60,7 +60,7 @@ public class ServiceDtoMapper {
             ServiceDto source = context.getSource();
             Service destination = context.getDestination();
             destination = mapSpecificFields(source, destination);
-            return context.getDestination();
+            return destination;
         };
     }
 
