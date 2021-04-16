@@ -103,6 +103,7 @@ public class ServiceDtoMapper {
                     new ServiceNotFoundException("user with id " + creatorId + "not found")
             );
             service.setCreator(creator);
+            destination = service;
         } else {
             long creatorId = source.getCreatorId();
             User creator = userDao.find(creatorId).orElseThrow(() ->
