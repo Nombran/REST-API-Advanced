@@ -196,5 +196,6 @@ public class CertificateService {
         service.setDeveloper(dev);
         service.setStatus(ServiceStatus.IN_PROGRESS);
         serviceDao.update(service);
+        serviceDao.deleteDesiredDevs(id);
     }
 }

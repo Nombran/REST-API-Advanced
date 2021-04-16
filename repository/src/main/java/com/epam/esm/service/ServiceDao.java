@@ -21,6 +21,7 @@ public class ServiceDao {
     private final EntityManager em;
     private static final String SQL_FIND_CERTIFICATE_BY_NAME = "select c from Service c" +
             " where c.name=:name";
+    private static final String SQL_DELETE_DESIRED_DEVS= "delete from user_desired_services where user_desired_services.service_id = ";
 
     @Autowired
     public ServiceDao(EntityManager em) {
@@ -136,5 +137,9 @@ public class ServiceDao {
         } catch (NoResultException ex) {
             return Optional.empty();
         }
+    }
+
+    public void deleteDesiredDevs(int serviceId) {
+        em.createNativeQuery(SQL_DELETE_DESIRED_DEVS + serviceId).executeUpdate();
     }
 }
