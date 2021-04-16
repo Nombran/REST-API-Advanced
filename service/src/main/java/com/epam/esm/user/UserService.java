@@ -8,6 +8,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ public class UserService {
             }
             userDto.setId(0);
             User user = modelMapper.map(userDto, User.class);
+            user.setRegistrationDate(LocalDateTime.now());
             userDao.create(user);
             return modelMapper.map(user, UserDto.class);
     }

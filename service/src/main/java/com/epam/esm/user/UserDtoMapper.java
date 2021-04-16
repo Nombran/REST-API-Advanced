@@ -62,6 +62,12 @@ public class UserDtoMapper {
         List<String> stringSkills = skills.stream().map(Tag::getName).collect(Collectors.toList());
         destination.setSkills(stringSkills);
         destination.setPassword(null);
+        if(source.getCreatedServices() != null) {
+            int allServicesCount = source.getCreatedServices().size();
+            destination.setAllServicesCount(allServicesCount);
+            int processingServicesCount = (int)source.getCreatedServices().stream().filter(service -> service.getDeveloper() != null).count();
+            destination.setProcessingServicesCount(processingServicesCount);
+        }
     }
 
     public void mapSpecificFields(UserDto source, User destination) {

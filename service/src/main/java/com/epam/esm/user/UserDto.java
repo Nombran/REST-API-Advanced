@@ -8,6 +8,7 @@ import org.springframework.hateoas.RepresentationModel;
 import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,6 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
+@ToString
 public class UserDto extends RepresentationModel<UserDto> {
     private long id;
     @NonNull
@@ -41,4 +43,7 @@ public class UserDto extends RepresentationModel<UserDto> {
     private String activity;
     private int salary;
     private String about;
+    private int allServicesCount;
+    private int processingServicesCount;
+    private LocalDateTime registrationDate;
 }

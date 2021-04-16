@@ -5,6 +5,8 @@ import com.epam.esm.tag.TagDao;
 import com.epam.esm.tag.TagDto;
 import com.epam.esm.user.User;
 import com.epam.esm.user.UserDao;
+import com.epam.esm.user.UserDto;
+import com.epam.esm.user.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.PagedModel;
@@ -143,5 +145,42 @@ public class CertificateService {
                 .stream()
                 .map(certificate -> modelMapper.map(certificate, ServiceDto.class))
                 .collect(Collectors.toList());
+    }
+
+    public List<UserDto> findServiceDesiredDevs(int id) {
+        Service service = serviceDao.find(id).orElseThrow(()->
+            new ServiceNotFoundException("service with id" + id + "not found")
+        );
+        return service.getDesiredDevelopers().stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addDesiredDev(int id, int devId) {
+        Service service = serviceDao.find(id).orElseThrow(()->
+                new ServiceNotFoundException("service with id" + id + "not found")
+        );
+        User dev = userDao.find(devId).orElseThrow(() ->
+                new UserNotFoundException("user with id" + devId + "not found")
+        );
+        List<User> desiredDevs = service.getDesiredDevelopers();
+        if(desiredDevs == null) {
+            desiredDevs = new ArrayList<>();
+        }
+        desiredDevs.add(dev);
+        service.setDesiredDevelopers(desiredDevs);
+        serviceDao.update(service);
+    }
+
+    public void deleteDesiredDev(int id, int devId) {
+        Service service = serviceDao.find(id).orElseThrow(()->
+                new ServiceNotFoundException("service with id" + id + "not found")
+        );
+        List<User> desiredDevs = service.getDesiredDevelopers();
+        if(desiredDevs == null) {
+            throw new ServiceNotFoundException("user with id" + devId + "not found");
+        }
+        service.setDesiredDevelopers(desiredDevs.stream().filter(user -> user.getId() != devId).collect(Collectors.toList()));
+        serviceDao.update(service);
     }
 }

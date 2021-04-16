@@ -4,6 +4,7 @@ import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDto;
 import com.epam.esm.tag.TagHateoasUtil;
 import com.epam.esm.tag.TagService;
+import com.epam.esm.user.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
@@ -256,5 +257,23 @@ public class ServiceController {
     public void deleteCertificateTag(@PathVariable("id") long certificateId,
                                      @PathVariable("tagId") long tagId) {
         certificateService.deleteCertificateTag(certificateId, tagId);
+    }
+
+    @GetMapping(value = "/{id}/desired-devs")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> getServiceDesiredDevelopers(@PathVariable(name = "id") int id) {
+        return certificateService.findServiceDesiredDevs(id);
+    }
+
+    @PostMapping(value = "/{id}/desired-devs/{devId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addDesiredDev(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
+        certificateService.addDesiredDev(id, devId);
+    }
+
+    @DeleteMapping(value = "/{id}/desired-devs/{devId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteDesiredDev(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
+        certificateService.deleteDesiredDev(id, devId);
     }
 }

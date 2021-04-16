@@ -3,10 +3,13 @@ package com.epam.esm.user;
 import com.epam.esm.service.Service;
 import com.epam.esm.tag.Tag;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 //@RequiredArgsConstructor
@@ -54,4 +57,6 @@ public class User {
     private int salary;
     @Column(name = "about")
     private String about;
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
 }

@@ -40,6 +40,7 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MappingException.class)
     public ErrorResponse handleMappingException(MappingException ex) {
+        ex.printStackTrace();
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -52,6 +53,7 @@ public class GlobalControllerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
+        ex.printStackTrace();
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -66,6 +68,7 @@ public class GlobalControllerExceptionHandler {
             ConstraintViolationException.class,
             MissingServletRequestParameterException.class})
     public ErrorResponse handleIllegalArgumentException(RuntimeException ex) {
+        ex.printStackTrace();
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -140,6 +143,7 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({HttpMessageNotReadableException.class})
     public ErrorResponse handleInvalidFormatException(HttpMessageNotReadableException ex) {
+        ex.printStackTrace();
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
