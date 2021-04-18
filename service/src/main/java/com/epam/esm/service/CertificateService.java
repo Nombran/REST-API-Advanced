@@ -216,7 +216,7 @@ public class CertificateService {
                 new ServiceNotFoundException("service not found")
         );
         service.setDeveloper(null);
+        service.setStatus(ServiceStatus.PENDING);
         serviceDao.update(service);
-
     }
 }

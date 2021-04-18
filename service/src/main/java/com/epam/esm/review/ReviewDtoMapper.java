@@ -33,8 +33,6 @@ public class ReviewDtoMapper {
     @PostConstruct
     public void setupMapper() {
         mapper.createTypeMap(Review.class, ReviewDto.class)
-                .addMappings(m -> m.skip(ReviewDto::setCreatorId))
-                .addMappings(m -> m.skip(ReviewDto::setDeveloperId))
                 .setPostConverter(toDtoConverter());
         mapper.createTypeMap(ReviewDto.class, Review.class)
                 .addMappings(m-> m.skip(Review::setCreator))
