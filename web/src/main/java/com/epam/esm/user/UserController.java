@@ -150,7 +150,6 @@ public class UserController {
      */
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #id")
     public UserDto findById(@PathVariable("id")long id) {
         UserDto userDto = userService.find(id);
         return userHateoasUtil.createSingleUserLinks(userDto);
@@ -170,6 +169,4 @@ public class UserController {
         this.serviceHateoasUtil.createPaginationLinks(serviceDtos, null, null, null);
         return serviceDtos;
     }
-
-
 }

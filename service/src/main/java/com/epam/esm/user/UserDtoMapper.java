@@ -1,5 +1,7 @@
 package com.epam.esm.user;
 
+import com.epam.esm.review.ReviewDao;
+import com.epam.esm.review.ReviewDto;
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDao;
 import org.modelmapper.Converter;
@@ -18,15 +20,18 @@ import java.util.stream.Collectors;
 public class UserDtoMapper {
     private final ModelMapper mapper;
     private final PasswordEncoder passwordEncoder;
-    private TagDao tagDao;
+    private final TagDao tagDao;
+    private final ReviewDao reviewDao;
 
     @Autowired
     public UserDtoMapper(ModelMapper modelMapper,
                          PasswordEncoder passwordEncoder,
-                         TagDao tagDao) {
+                         TagDao tagDao,
+                         ReviewDao reviewDao) {
         this.mapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
         this.tagDao = tagDao;
+        this.reviewDao = reviewDao;
     }
 
     @PostConstruct
@@ -34,6 +39,7 @@ public class UserDtoMapper {
         mapper.createTypeMap(User.class, UserDto.class)
                 .addMappings(m -> m.skip(UserDto::setPassword))
                 .addMappings(m -> m.skip(UserDto::setSkills))
+                .addMappings(m -> m.skip(UserDto::setReviews))
                 .setPostConverter(toDtoConverter());
         mapper.createTypeMap(UserDto.class, User.class)
                 .addMappings(m-> m.skip(User::setSkills))
@@ -68,6 +74,11 @@ public class UserDtoMapper {
             int processingServicesCount = (int)source.getCreatedServices().stream().filter(service -> service.getDeveloper() != null).count();
             destination.setProcessingServicesCount(processingServicesCount);
         }
+        List<ReviewDto> reviewDtos = reviewDao.findByDeveloperId((int)source.getId())
+                .stream()
+                .map(review -> mapper.map(review, ReviewDto.class))
+                .collect(Collectors.toList());
+        destination.setReviews(reviewDtos);
     }
 
     public void mapSpecificFields(UserDto source, User destination) {

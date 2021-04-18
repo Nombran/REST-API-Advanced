@@ -1,5 +1,6 @@
 package com.epam.esm.user;
 
+import com.epam.esm.review.ReviewDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -46,4 +47,5 @@ public class UserDto extends RepresentationModel<UserDto> {
     private int allServicesCount;
     private int processingServicesCount;
     private LocalDateTime registrationDate;
+    private List<ReviewDto> reviews;
 }

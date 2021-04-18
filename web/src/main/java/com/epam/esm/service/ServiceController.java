@@ -1,5 +1,7 @@
 package com.epam.esm.service;
 
+import com.epam.esm.review.ReviewDto;
+import com.epam.esm.review.ReviewService;
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDto;
 import com.epam.esm.tag.TagHateoasUtil;
@@ -56,15 +58,19 @@ public class ServiceController {
      */
     private final TagHateoasUtil tagHateoasUtil;
 
+    private final ReviewService reviewService;
+
     @Autowired
     public ServiceController(CertificateService certificateService,
                              TagService tagService,
                              ServiceHateoasUtil serviceHateoasUtil,
-                             TagHateoasUtil tagHateoasUtil) {
+                             TagHateoasUtil tagHateoasUtil,
+                             ReviewService reviewService) {
         this.certificateService = certificateService;
         this.tagService = tagService;
         this.serviceHateoasUtil = serviceHateoasUtil;
         this.tagHateoasUtil = tagHateoasUtil;
+        this.reviewService = reviewService;
     }
 
     /**
@@ -279,5 +285,17 @@ public class ServiceController {
     @ResponseStatus(HttpStatus.OK)
     public void addDeveloper(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
         certificateService.addDeveloper(id, devId);
+    }
+
+    @DeleteMapping(value = "/{id}/dev")
+    @ResponseStatus(HttpStatus.OK)
+    public void removeDeveloper(@PathVariable(name = "id") int id) {
+        certificateService.removeDeveloper(id);
+    }
+
+    @PostMapping(value = "/{id}/close")
+    @ResponseStatus(HttpStatus.OK)
+    public void closeServiceRequest(@PathVariable(name = "id") int id, @RequestBody ReviewDto reviewDto) {
+        reviewService.createReview(id, reviewDto);
     }
 }

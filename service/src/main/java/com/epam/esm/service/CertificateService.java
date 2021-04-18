@@ -210,4 +210,13 @@ public class CertificateService {
         serviceDao.update(service);
         serviceDao.deleteDesiredDevs(id);
     }
+
+    public void removeDeveloper(int id) {
+        Service service = serviceDao.find(id).orElseThrow(() ->
+                new ServiceNotFoundException("service not found")
+        );
+        service.setDeveloper(null);
+        serviceDao.update(service);
+
+    }
 }
