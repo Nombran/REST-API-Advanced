@@ -1,6 +1,7 @@
 package com.epam.esm.user;
 
 import com.epam.esm.service.ServiceConflictException;
+import com.epam.esm.service.ServiceDto;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,5 +67,25 @@ public class UserService {
         int totalUsersCount = userDao.findAllUserCount().intValue();
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(perPage, page, totalUsersCount);
         return PagedModel.of(users, pageMetadata);
+    }
+
+    public UserServicesDto findUserServices(long userId) {
+        User user = userDao.find(userId).orElseThrow(() ->
+                new UserNotFoundException("user with id " + userId + "not found")
+        );
+        UserServicesDto userServicesDto = new UserServicesDto();
+        userServicesDto.setTakenServices(user.getTakenServices()
+                .stream()
+                .map(service -> modelMapper.map(service, ServiceDto.class))
+                .collect(Collectors.toList()));
+        userServicesDto.setCreatedServices(user.getCreatedServices()
+                .stream()
+                .map(service -> modelMapper.map(service, ServiceDto.class))
+                .collect(Collectors.toList()));
+        userServicesDto.setDesiredServices(user.getDesiredServices()
+                .stream()
+                .map(service -> modelMapper.map(service, ServiceDto.class))
+                .collect(Collectors.toList()));
+        return userServicesDto;
     }
 }
