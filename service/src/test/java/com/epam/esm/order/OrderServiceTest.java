@@ -1,7 +1,7 @@
 package com.epam.esm.order;
 
-import com.epam.esm.certificate.Certificate;
-import com.epam.esm.certificate.CertificateStatus;
+import com.epam.esm.service.Service;
+import com.epam.esm.service.ServiceStatus;
 import com.epam.esm.user.User;
 import com.epam.esm.user.UserDao;
 import com.epam.esm.user.UserNotFoundException;
@@ -54,13 +54,13 @@ public class OrderServiceTest {
     @Test
     public void create_orderWithNonactiveCertificate_shouldThrowException() {
         //Given
-        Certificate certificate = new Certificate("name", "description", new BigDecimal("12.6"),
+        Service service = new Service("name", "description", new BigDecimal("12.6"),
                 5);
-        certificate.setStatus(CertificateStatus.PUBLISHED);
-        certificate.setTags(Collections.emptyList());
+        service.setStatus(ServiceStatus.PUBLISHED);
+        service.setTags(Collections.emptyList());
         doAnswer(invocation -> {
             Order order = new Order();
-            order.setCertificates(Collections.singletonList(certificate));
+            order.setServices(Collections.singletonList(service));
             return order;
         }).when(modelMapper).map(any(OrderDto.class),eq(Order.class));
         doAnswer(invocation -> Optional.of(new User())).when(userDao)
@@ -76,13 +76,13 @@ public class OrderServiceTest {
     @Test
     public void create_correctOrder_shouldCallDaoCreate() {
         //Given
-        Certificate certificate = new Certificate("name", "description", new BigDecimal("12.6"),
+        Service service = new Service("name", "description", new BigDecimal("12.6"),
                 5);
-        certificate.setStatus(CertificateStatus.ACTIVE);
-        certificate.setTags(Collections.emptyList());
+        service.setStatus(ServiceStatus.ACTIVE);
+        service.setTags(Collections.emptyList());
         doAnswer(invocation -> {
             Order order = new Order();
-            order.setCertificates(Collections.singletonList(certificate));
+            order.setServices(Collections.singletonList(service));
             return order;
         }).when(modelMapper).map(any(OrderDto.class),eq(Order.class));
         doAnswer(invocation -> Optional.of(new User())).when(userDao)
@@ -100,17 +100,17 @@ public class OrderServiceTest {
     @Test
     public void create_correctOrder_shouldReturnOrderWithCorrectTotalCost() {
         //Given
-        Certificate certificate = new Certificate("name", "description", new BigDecimal("12.6"),
+        Service service = new Service("name", "description", new BigDecimal("12.6"),
                 5);
-        certificate.setStatus(CertificateStatus.ACTIVE);
-        certificate.setTags(Collections.emptyList());
-        Certificate certificateTwo = new Certificate("name 2", "description 2", new BigDecimal("10.0"),
+        service.setStatus(ServiceStatus.ACTIVE);
+        service.setTags(Collections.emptyList());
+        Service serviceTwo = new Service("name 2", "description 2", new BigDecimal("10.0"),
                 5);
-        certificate.setStatus(CertificateStatus.ACTIVE);
-        certificate.setTags(Collections.emptyList());
+        service.setStatus(ServiceStatus.ACTIVE);
+        service.setTags(Collections.emptyList());
         doAnswer(invocation -> {
             Order order = new Order();
-            order.setCertificates(Arrays.asList(certificate, certificateTwo));
+            order.setServices(Arrays.asList(service, serviceTwo));
             return order;
         }).when(modelMapper).map(any(OrderDto.class),eq(Order.class));
         doAnswer(invocation -> Optional.of(new User())).when(userDao)

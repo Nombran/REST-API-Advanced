@@ -44,7 +44,7 @@ And this is what HATEOAS does.
 
 ### Task #2
 The application should be extended to expose the following REST APIs:
-1. Change single field of main entity (e.g. if you are using suggested in the previous module model, you should implement the possibility to change only duration of a certificate or only price).
+1. Change single field of main entity (e.g. if you are using suggested in the previous module model, you should implement the possibility to change only duration of a service or only price).
 2. Make an order (or any relevant action) on main entity for a user.
 3. Get information about user’s orders.
 4. Get information about user’s order: cost and timestamp of a purchase.

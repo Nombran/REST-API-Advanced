@@ -1,30 +1,78 @@
 package com.epam.esm.user;
 
+import com.epam.esm.jwt.JwtUser;
+import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.ServiceDto;
+import com.epam.esm.service.ServiceHateoasUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.List;
 
+/**
+ * Class UserController for Rest Api Advanced Task.
+ *
+ * @author ARTSIOM BERASTSEN
+ * @version 1.0
+ */
 @Validated
 @RestController
 @RequestMapping(value = "/api/v1/users")
 public class UserController {
+    /**
+     * Field userService
+     *
+     * @see UserService
+     */
     private final UserService userService;
+
+    /**
+     * Field userHateoasUtil
+     *
+     * @see UserHateoasUtil
+     */
     private final UserHateoasUtil userHateoasUtil;
+
+    private CertificateService certificateService;
+
+    private final ServiceHateoasUtil serviceHateoasUtil;
 
     @Autowired
     public UserController(UserService userService,
-                          UserHateoasUtil userHateoasUtil) {
+                          UserHateoasUtil userHateoasUtil,
+                          CertificateService certificateService,
+                          ServiceHateoasUtil serviceHateoasUtil) {
         this.userService = userService;
         this.userHateoasUtil = userHateoasUtil;
+        this.certificateService = certificateService;
+        this.serviceHateoasUtil = serviceHateoasUtil;
     }
 
+    /**
+     * GET method findUsers, that returns PageModel object with list of<br>
+     * users, which match to all request params.<br>
+     * <p>
+     * [GET /api/v1/users/]<br>
+     * Request (application/json).<br>
+     * Response 200 (application/json).
+     * </p>
+     *
+     * @param page represents page number
+     * @param perPage represents number of certificate's items per page
+     * @return PageModel object with list of certificatesDto objects, which match to all request params<br>
+     * and PageMetadata info
+     * @see UserDto
+     * @see PagedModel
+     * @see UserHateoasUtil
+     */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Secured("ROLE_ADMIN")
@@ -39,6 +87,19 @@ public class UserController {
         return model;
     }
 
+    /**
+     * POST method ,which creates user entity<br>
+     * <p>
+     * [POST api/v1/users/]<br>
+     * Request (application/json).<br>
+     * Response 201 (application/json).
+     * </p>
+     *
+     * @param userDto represents dto object, which contain user<br>
+     *                    information.
+     * @see UserDto
+     * @see UserHateoasUtil
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto create(@Valid @RequestBody UserDto userDto) {
@@ -46,6 +107,18 @@ public class UserController {
         return userHateoasUtil.createSingleUserLinks(created);
     }
 
+    /**
+     * PUT method, used to update existent user object<br>
+     * <p>
+     * [PUT /api/v1/users/id/]<br>
+     * Request (application/json).<br>
+     * Response 200 (application/json).
+     * </p>
+     *
+     * @param userDto represents dto object, which contain user information.<br>
+     * @param id  represents id of the user.
+     * @see UserDto
+     */
     @PreAuthorize("authentication.principal.id == #id")
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -54,11 +127,46 @@ public class UserController {
         return userHateoasUtil.createSingleUserLinks(updated);
     }
 
+    @GetMapping(value = "/me")
+    @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER","ROLE_ADMIN"})
+    public UserDto getUserByToken(Authentication authentication) {
+        JwtUser user = (JwtUser)authentication.getPrincipal();
+        UserDto userDto = userService.find(user.getId());
+        return userHateoasUtil.createSingleUserLinks(userDto);
+    }
+
+    /**
+     * GET method, which used to get user dto object by it's id.<br>
+     * <p>
+     * [GET /api/v1/users/id/]<br>
+     * Request (application/json).<br>
+     * Response 200 (application/json).
+     * </p>
+     *
+     * @param id represents id of the user.
+     * @return userDto object<br>
+     * @see UserDto
+     */
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #id")
     public UserDto findById(@PathVariable("id")long id) {
         UserDto userDto = userService.find(id);
         return userHateoasUtil.createSingleUserLinks(userDto);
+    }
+
+    @GetMapping("/{id}/services")
+    @ResponseStatus(HttpStatus.OK)
+    public UserServicesDto getUserServices(@PathVariable("id")long id) {
+        return userService.findUserServices(id);
+    }
+
+    @GetMapping(value = "/{id}/services/created")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.principal.id == #id")
+    public PagedModel<ServiceDto> getCreatedServices(@PathVariable("id")long id) {
+        PagedModel<ServiceDto> serviceDtos = certificateService.getUserCreatedServices(id);
+        this.serviceHateoasUtil.createPaginationLinks(serviceDtos, null, null, null);
+        return serviceDtos;
     }
 }

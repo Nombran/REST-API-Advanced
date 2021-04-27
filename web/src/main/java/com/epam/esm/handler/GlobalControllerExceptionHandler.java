@@ -1,10 +1,7 @@
 package com.epam.esm.handler;
 
-import com.epam.esm.certificate.CertificateConflictException;
-import com.epam.esm.certificate.CertificateNotFoundException;
-import com.epam.esm.exception.ServiceConflictException;
-import com.epam.esm.order.OrderConflictException;
-import com.epam.esm.order.OrderNotFoundException;
+import com.epam.esm.service.ServiceConflictException;
+import com.epam.esm.service.ServiceNotFoundException;
 import com.epam.esm.tag.TagNotFoundException;
 import com.epam.esm.user.UserNotFoundException;
 import org.modelmapper.MappingException;
@@ -43,6 +40,7 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MappingException.class)
     public ErrorResponse handleMappingException(MappingException ex) {
+        ex.printStackTrace();
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -55,6 +53,7 @@ public class GlobalControllerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
+        ex.printStackTrace();
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -67,9 +66,9 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({IllegalArgumentException.class,
             ConstraintViolationException.class,
-            MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class})
+            MissingServletRequestParameterException.class})
     public ErrorResponse handleIllegalArgumentException(RuntimeException ex) {
+        ex.printStackTrace();
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -91,11 +90,10 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({CertificateNotFoundException.class,
+    @ExceptionHandler({ServiceNotFoundException.class,
             NoHandlerFoundException.class,
             TagNotFoundException.class,
             UserNotFoundException.class,
-            OrderNotFoundException.class
     })
     public ErrorResponse handleResourceNotFound(Exception ex) {
         ErrorResponse error = new ErrorResponse();
@@ -107,9 +105,7 @@ public class GlobalControllerExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler({ServiceConflictException.class,
-            CertificateConflictException.class,
-            OrderConflictException.class})
+    @ExceptionHandler({ServiceConflictException.class})
     public ErrorResponse handleServiceConflictException(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse();
         error.setTimestamp(LocalDateTime.now());
@@ -141,6 +137,18 @@ public class GlobalControllerExceptionHandler {
         error.setStatus(HttpStatus.UNAUTHORIZED.value());
         error.setError(HttpStatus.UNAUTHORIZED.toString());
         error.setMessage(ex.getMessage());
+        return error;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({HttpMessageNotReadableException.class})
+    public ErrorResponse handleInvalidFormatException(HttpMessageNotReadableException ex) {
+        ex.printStackTrace();
+        ErrorResponse error = new ErrorResponse();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setError(HttpStatus.BAD_REQUEST.toString());
+        error.setMessage(ex.getCause().getLocalizedMessage());
         return error;
     }
 }

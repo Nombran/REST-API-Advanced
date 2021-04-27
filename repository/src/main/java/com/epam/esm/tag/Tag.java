@@ -1,6 +1,6 @@
 package com.epam.esm.tag;
 
-import com.epam.esm.certificate.Certificate;
+import com.epam.esm.service.Service;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,5 +30,5 @@ public class Tag {
     @Column(name = "name", unique = true)
     private String name;
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-    private List<Certificate> certificates;
+    private List<Service> services;
 }

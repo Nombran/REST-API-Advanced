@@ -1,5 +1,7 @@
-package com.epam.esm.certificate;
+package com.epam.esm.service;
 
+import com.epam.esm.user.User;
+import com.epam.esm.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -23,7 +25,7 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode(callSuper = false)
 @RequiredArgsConstructor
-public class CertificateDto extends RepresentationModel<CertificateDto> {
+public class ServiceDto extends RepresentationModel<ServiceDto> {
     private long id;
     @NonNull
     @NotBlank
@@ -31,7 +33,7 @@ public class CertificateDto extends RepresentationModel<CertificateDto> {
     private String name;
     @NonNull
     @NotBlank
-    @Size(min = 5, max = 50)
+    @Size(min = 5, max = 3000)
     private String description;
     @NonNull
     @DecimalMin(value = "0.0")
@@ -44,13 +46,11 @@ public class CertificateDto extends RepresentationModel<CertificateDto> {
     private LocalDateTime modificationDate;
     @NonNull
     @NotNull
-    @Min(1)
-    @Max(100)
-    private Integer duration;
-    @NonNull
-    @NotNull
-    private CertificateStatus status;
-    @NonNull
-    @NotNull
     private List<String> tags;
+    @NonNull
+    @NotNull
+    private long creatorId;
+    private UserDto developer;
+    private List<UserDto> desiredDevelopers;
+    private String status;
 }

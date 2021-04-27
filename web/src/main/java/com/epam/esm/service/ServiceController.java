@@ -1,9 +1,12 @@
-package com.epam.esm.certificate;
+package com.epam.esm.service;
 
-import com.epam.esm.tag.TagHateoasUtil;
+import com.epam.esm.review.ReviewDto;
+import com.epam.esm.review.ReviewService;
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.TagDto;
+import com.epam.esm.tag.TagHateoasUtil;
 import com.epam.esm.tag.TagService;
+import com.epam.esm.user.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
@@ -14,9 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 /**
- * Class CertificateController for Rest Api Basics Task.
+ * Class CertificateController for Rest Api Advanced Task.
  *
  * @author ARTSIOM BERASTSEN
  * @version 1.0
@@ -24,7 +28,7 @@ import javax.validation.constraints.Min;
 @Validated
 @RestController
 @RequestMapping(value = "/api/v1/certificates")
-public class CertificateController {
+public class ServiceController {
 
     /**
      * Field certificateService
@@ -40,56 +44,81 @@ public class CertificateController {
      */
     private final TagService tagService;
 
-    private final CertificateHateoasUtil certificateHateoasUtil;
+    /**
+     * Field certificateHateoasUtil
+     *
+     * @see ServiceHateoasUtil
+     */
+    private final ServiceHateoasUtil serviceHateoasUtil;
 
+    /**
+     * Field TagHateoasUtil
+     *
+     * @see TagHateoasUtil
+     */
     private final TagHateoasUtil tagHateoasUtil;
 
+    private final ReviewService reviewService;
+
     @Autowired
-    public CertificateController(CertificateService certificateService,
-                                 TagService tagService,
-                                 CertificateHateoasUtil certificateHateoasUtil,
-                                 TagHateoasUtil tagHateoasUtil) {
+    public ServiceController(CertificateService certificateService,
+                             TagService tagService,
+                             ServiceHateoasUtil serviceHateoasUtil,
+                             TagHateoasUtil tagHateoasUtil,
+                             ReviewService reviewService) {
         this.certificateService = certificateService;
         this.tagService = tagService;
-        this.certificateHateoasUtil = certificateHateoasUtil;
+        this.serviceHateoasUtil = serviceHateoasUtil;
         this.tagHateoasUtil = tagHateoasUtil;
+        this.reviewService = reviewService;
     }
 
     /**
-     * GET method findCertificates, that returns List of CertificateDto objects, which match <br>
-     * to all request params.<br>
+     * GET method findCertificates, that returns PageModel object with list of<br>
+     * certificates, which match to all request params.<br>
      * <p>
      * [GET /api/v1/certificates/]<br>
      * Request (application/json).<br>
      * Response 200 (application/json).
      * </p>
      *
-     * @param t        represents tag's name, connected with certificate
+     * @param tagNames represents names of tags, connected with certificate
      * @param textPart represents part of full certificate's description
      * @param orderBy  represents field name for ordering by
-     * @return list of certificatesDto objects, which match to all request params
-     * @see CertificateDto
-     * @see Certificate
+     * @param page     represents page number
+     * @param perPage  represents number of certificate's items per page
+     * @return PageModel object with list of certificatesDto objects, which match to all request params<br>
+     * and PageMetadata info
+     * @see ServiceDto
+     * @see Service
+     * @see ServiceParamWrapper
+     * @see ServiceHateoasUtil
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public PagedModel<CertificateDto> findCertificates(@RequestParam(name = "tagNames", required = false)
+    public PagedModel<ServiceDto> findCertificates(@RequestParam(name = "tagNames", required = false)
                                                                String[] tagNames,
-                                                       @RequestParam(name = "textPart", required = false)
+                                                   @RequestParam(name = "textPart", required = false)
                                                                String textPart,
-                                                       @RequestParam(name = "orderBy", required = false, defaultValue = "id")
+                                                   @RequestParam(name = "orderBy", required = false, defaultValue = "id")
                                                                String orderBy,
-                                                       @RequestParam(name = "page", required = false, defaultValue = "1")
+                                                   @RequestParam(name = "page", required = false, defaultValue = "1")
                                                        @Min(value = 1, message = "page number must be greater or equal to 1")
                                                                Integer page,
-                                                       @RequestParam(name = "perPage", required = false, defaultValue = "50")
+                                                   @RequestParam(name = "perPage", required = false, defaultValue = "50")
                                                        @Min(value = 1, message = "perPage param must be greater or equal to 1")
                                                                Integer perPage
     ) {
-        PagedModel<CertificateDto> pagedModel = certificateService.findCertificates(tagNames, textPart,
-                orderBy, page, perPage);
-        certificateHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
-        return pagedModel;
+            ServiceParamWrapper wrapper = new ServiceParamWrapper(tagNames, textPart, orderBy, page, perPage);
+            PagedModel<ServiceDto> pagedModel = certificateService.findCertificates(wrapper);
+            serviceHateoasUtil.createPaginationLinks(pagedModel, tagNames, textPart, orderBy);
+            return pagedModel;
+    }
+
+    @GetMapping(value = "/free")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ServiceDto> getFreeServices() {
+        return certificateService.findFreeServices();
     }
 
     /**
@@ -103,14 +132,14 @@ public class CertificateController {
      *
      * @param certificate represents dto object, which contain certificate<br>
      *                    information and list of it's tags.
-     * @see CertificateDto
+     * @see ServiceDto
+     * @see ServiceHateoasUtil
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Secured("ROLE_ADMIN")
-    public CertificateDto create(@Valid @RequestBody CertificateDto certificate) {
-        CertificateDto certificateDto = certificateService.create(certificate);
-        return certificateHateoasUtil.createSelfRelLink(certificateDto);
+    public ServiceDto create(@Valid @RequestBody ServiceDto certificate) {
+        ServiceDto serviceDto = certificateService.create(certificate);
+        return serviceHateoasUtil.createSelfRelLink(serviceDto);
     }
 
     /**
@@ -125,21 +154,33 @@ public class CertificateController {
      * @param certificate represents dto object, which contain certificate<br>
      *                    information and list of it's tags.
      * @param id          represents id of the certificate.
-     * @see CertificateDto
+     * @see ServiceDto
      */
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @Secured("ROLE_ADMIN")
-    public void update(@Valid @RequestBody CertificateDto certificate, @PathVariable("id") long id) {
+    public void update(@Valid @RequestBody ServiceDto certificate, @PathVariable("id") long id) {
         certificate.setId(id);
         certificateService.update(certificate);
     }
 
+    /**
+     * PATCH method, used to update existent certificate object<br>
+     * by fields <br>
+     * <p>
+     * [PATCH /api/v1/certificates/id/]<br>
+     * Request (application/json).<br>
+     * Response 200 (application/json).
+     * </p>
+     *
+     * @param serviceDto represents certificate fields<br>
+     * @param id             represents id of the certificate.
+     * @see ServiceDto
+     */
     @PatchMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Secured("ROLE_ADMIN")
-    public void patch(@PathVariable("id") long id, @RequestBody CertificateDto certificateDto) {
-        certificateService.patch(id, certificateDto);
+    public void patch(@PathVariable("id") long id, @RequestBody ServiceDto serviceDto) {
+        certificateService.patch(id, serviceDto);
     }
 
     /**
@@ -153,12 +194,12 @@ public class CertificateController {
      * @param id represents id of the certificate.
      * @return certificateDto object, which contain all certificate<br>
      * information and list of it's tags.
-     * @see CertificateDto
+     * @see ServiceDto
      */
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CertificateDto findById(@PathVariable("id") long id) {
-        return certificateHateoasUtil.createSelfRelLink(certificateService.find(id));
+    public ServiceDto findById(@PathVariable("id") long id) {
+        return serviceHateoasUtil.createSelfRelLink(certificateService.find(id));
     }
 
     /**
@@ -175,11 +216,11 @@ public class CertificateController {
      */
     @GetMapping(value = "/{id}/tags")
     @ResponseStatus(HttpStatus.OK)
-    @Secured({"ROLE_USER","ROLE_ADMIN"})
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public CollectionModel<TagDto> findAllCertificateTags(@PathVariable("id") long id) {
-       CollectionModel<TagDto> tags =  CollectionModel.of(tagService.findTagsByCertificateId(id));
-       tagHateoasUtil.createCertificateTagsLinks(tags,id);
-       return tags;
+        CollectionModel<TagDto> tags = CollectionModel.of(tagService.findTagsByCertificateId(id));
+        tagHateoasUtil.createCertificateTagsLinks(tags, id);
+        return tags;
     }
 
     /**
@@ -211,7 +252,7 @@ public class CertificateController {
      *
      * @param certificateId represents id of the certificate.
      * @param tagId         represents id of the tag.
-     * @see Certificate
+     * @see Service
      * @see Tag
      */
     @DeleteMapping(value = "/{id}/tags/{tagId}")
@@ -220,5 +261,41 @@ public class CertificateController {
     public void deleteCertificateTag(@PathVariable("id") long certificateId,
                                      @PathVariable("tagId") long tagId) {
         certificateService.deleteCertificateTag(certificateId, tagId);
+    }
+
+    @GetMapping(value = "/{id}/desired-devs")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> getServiceDesiredDevelopers(@PathVariable(name = "id") int id) {
+        return certificateService.findServiceDesiredDevs(id);
+    }
+
+    @PostMapping(value = "/{id}/desired-devs/{devId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addDesiredDev(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
+        certificateService.addDesiredDev(id, devId);
+    }
+
+    @DeleteMapping(value = "/{id}/desired-devs/{devId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteDesiredDev(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
+        certificateService.deleteDesiredDev(id, devId);
+    }
+
+    @PostMapping(value = "/{id}/dev/{devId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void addDeveloper(@PathVariable(name = "id") int id, @PathVariable(name = "devId")int devId) {
+        certificateService.addDeveloper(id, devId);
+    }
+
+    @DeleteMapping(value = "/{id}/dev")
+    @ResponseStatus(HttpStatus.OK)
+    public void removeDeveloper(@PathVariable(name = "id") int id) {
+        certificateService.removeDeveloper(id);
+    }
+
+    @PostMapping(value = "/{id}/close")
+    @ResponseStatus(HttpStatus.OK)
+    public void closeServiceRequest(@PathVariable(name = "id") int id, @RequestBody ReviewDto reviewDto) {
+        reviewService.createReview(id, reviewDto);
     }
 }

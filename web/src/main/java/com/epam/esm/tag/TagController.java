@@ -11,7 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 /**
- * Class TagController for Rest Api Basics Task.
+ * Class TagController for Rest Advanced Task.
  *
  * @author ARTSIOM BERASTSEN
  * @version 1.0
@@ -22,10 +22,16 @@ import javax.validation.constraints.Min;
 public class TagController {
     /**
      * Field TagService
+     *
      * @see TagService
      */
     private final TagService tagService;
 
+    /**
+     * Field TagHateoasUtil
+     *
+     * @see TagHateoasUtil
+     */
     private final TagHateoasUtil tagHateoasUtil;
 
     @Autowired
@@ -36,28 +42,33 @@ public class TagController {
     }
 
     /**
-     * GET method, which used to get all tag objects.<br>
+     * GET method, which returns pageModel object with list of tags<br>
+     * and pageMetadata object.
      * <p>
      * [GET /api/v1/tags/]<br>
      * Request (application/json).<br>
      * Response 200 (application/json).
      * </p>
      *
-     * @return list of tag objects.
+     * @param page represents number of page
+     * @param perPage represents number of tags per page
+     * @return pageModel object with list of tags.
      * @see Tag
+     * @see PagedModel
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public PagedModel<TagDto> findTags(@RequestParam(name = "page", required = false, defaultValue = "1")
                                      @Min(value = 1, message = "page number must be greater or equal to 1")
                                              Integer page,
                                  @RequestParam(name = "perPage", required = false, defaultValue = "50")
                                      @Min(value = 1, message = "perPage param must be greater or equal to 1")
-                                             Integer perPage) {
-        PagedModel<TagDto> model = tagService.findTags(page, perPage);
+                                             Integer perPage,
+                                       @RequestParam(name = "textPart", required = false)
+                                       String textPart) {
+        PagedModel<TagDto> model = tagService.findTags(page, perPage, textPart);
         model.getContent().forEach(tagHateoasUtil::createSelfRel);
-        tagHateoasUtil.createPaginationLinks(model);
+        tagHateoasUtil.createPaginationLinks(model, textPart);
         return model;
     }
 
@@ -70,7 +81,8 @@ public class TagController {
      * </p>
      *
      * @param tag represents tag object
-     * see Tag
+     * @return created Tag
+     * @see Tag
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -114,6 +126,17 @@ public class TagController {
         tagService.delete(id);
     }
 
+    /**
+     * GET method, which used to get the most widely used secondary entity<br>
+     * of a user with the highest cost of all orders.<br>
+     * <p>
+     * [GET /api/v1/tags/most-widely-tag]<br>
+     * Request (application/json).<br>
+     * Response 200 (application/json).
+     * </p>
+     * @return tag object.
+     * @see Tag
+     */
     @GetMapping(value = "/most-widely-tag")
     @Secured({"ROLE_USER","ROLE_ADMIN"})
     public TagDto GetValuedUsersMostPopularTag() {

@@ -1,4 +1,4 @@
-package com.epam.esm.certificate;
+package com.epam.esm.service;
 
 import com.epam.esm.tag.Tag;
 import com.epam.esm.tag.Tag_;
@@ -12,60 +12,60 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.*;
 
 @Slf4j
 @Repository
-public class CertificateDao {
+public class ServiceDao {
     @PersistenceContext
     private final EntityManager em;
-    private static final String SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME = "select c from Certificate c" +
-            " where c.status in(:active,:published)" +
-            " and c.name=:name";
+    private static final String SQL_FIND_CERTIFICATE_BY_NAME = "select c from Service c" +
+            " where c.name=:name";
+    private static final String SQL_DELETE_DESIRED_DEVS= "delete from user_desired_services where user_desired_services.service_id = ";
 
     @Autowired
-    public CertificateDao(EntityManager em) {
+    public ServiceDao(EntityManager em) {
         this.em = em;
     }
 
 
-    public void create(Certificate certificate) {
+    public void create(Service service) {
         LocalDateTime creationDate = LocalDateTime.now();
-        certificate.setCreationDate(creationDate);
-        em.persist(certificate);
+        service.setCreationDate(creationDate);
+        em.persist(service);
     }
 
-    public void update(Certificate certificate) {
+    public void update(Service service) {
         LocalDateTime modificationDate = LocalDateTime.now();
-        certificate.setModificationDate(modificationDate);
-        em.merge(certificate);
+        service.setModificationDate(modificationDate);
+        em.merge(service);
     }
 
-    public void delete(Certificate certificate) {
-        em.remove(certificate);
+    public Optional<Service> find(long id) {
+        return Optional.ofNullable(em.find(Service.class, id));
     }
 
-    public Optional<Certificate> find(long id) {
-        return Optional.ofNullable(em.find(Certificate.class, id));
-    }
-
-    public List<Certificate> findCertificates(List<String> tagNames, String textPart, String orderBy,
-                                              Integer page, Integer perPage) {
+    public List<Service> findCertificates(ServiceParamWrapper wrapper) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
-        Root<Certificate> root = query.from(Certificate.class);
+        CriteriaQuery<Service> query = cb.createQuery(Service.class);
+        Root<Service> root = query.from(Service.class);
         query.select(root);
+
+        String[] tagNamesArray = wrapper.getTagNames();
+        List<String> tagNames = null;
+        if(tagNamesArray != null) {
+            tagNames = Arrays.asList(tagNamesArray);
+        }
+
+        String textPart = wrapper.getTextPart();
+        String orderBy = wrapper.getOrderBy();
+        int page = wrapper.getPage();
+        int perPage = wrapper.getPerPage();
 
         prepareSearchQuery(query, root, tagNames, textPart);
 
-        boolean isOrderByCorrect = Stream.of(CertificateOrderBy.values())
-                .anyMatch(value -> value.getOrderByFieldName()
-                        .equals(orderBy));
-        if (isOrderByCorrect) {
-            query.orderBy(cb.asc(root.get(orderBy)));
+        if (orderBy != null) {
+            query.orderBy(cb.desc(root.get(orderBy)));
         }
 
         return em.createQuery(query)
@@ -74,10 +74,18 @@ public class CertificateDao {
                 .getResultList();
     }
 
-    public int getTotalElementsCountFromCertificateSearch(List<String> tagNames, String textPart) {
+    public int getTotalElementsCountFromCertificateSearch(ServiceParamWrapper wrapper) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
-        Root<Certificate> root = query.from(Certificate.class);
+        Root<Service> root = query.from(Service.class);
+
+        List<String> tagNames = Collections.emptyList();
+        String[] tagNamesArray = wrapper.getTagNames();
+        if(tagNamesArray != null) {
+            tagNames = Arrays.asList(tagNamesArray);
+        }
+
+        String textPart = wrapper.getTextPart();
 
         prepareSearchQuery(query, root, tagNames, textPart);
 
@@ -93,20 +101,20 @@ public class CertificateDao {
         }
     }
 
-    public <X> void prepareSearchQuery(AbstractQuery<X> query, Root<Certificate> root,
+    public <X> void prepareSearchQuery(AbstractQuery<X> query, Root<Service> root,
                                        List<String> tagNames, String textPart) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         List<Predicate> predicates = new ArrayList<>();
 
         if (textPart != null && !textPart.isEmpty()) {
-            Predicate predicateForName = cb.like(root.get(Certificate_.NAME), "%" + textPart + "%");
-            Predicate predicateForDescription = cb.like(root.get(Certificate_.description), "%" + textPart + "%");
+            Predicate predicateForName = cb.like(cb.lower(root.get(Service_.NAME)), "%" + textPart + "%");
+            Predicate predicateForDescription = cb.like(root.get(Service_.description), "%" + textPart + "%");
             Predicate textPartPredicate = cb.or(predicateForName, predicateForDescription);
             predicates.add(textPartPredicate);
         }
 
         if (tagNames != null && tagNames.size() != 0) {
-            ListJoin<Certificate, Tag> tagJoin = root.join(Certificate_.tags);
+            ListJoin<Service, Tag> tagJoin = root.join(Service_.tags);
             Expression<Long> countOfCertificateTagsInGroup = cb.count(root);
             Predicate predicateCertificateTagsInInputList = tagJoin.get(Tag_.NAME).in(tagNames);
             predicates.add(predicateCertificateTagsInInputList);
@@ -118,18 +126,20 @@ public class CertificateDao {
         }
     }
 
-    public Optional<Certificate> findNonInactiveCertificateByName(String name) {
-        TypedQuery<Certificate> typedQuery = em.createQuery(
-                SQL_FIND_NON_INACTIVE_CERTIFICATE_BY_NAME,
-                Certificate.class);
-        typedQuery.setParameter("active", CertificateStatus.ACTIVE);
-        typedQuery.setParameter("published", CertificateStatus.PUBLISHED);
+    public Optional<Service> findCertificateByName(String name) {
+        TypedQuery<Service> typedQuery = em.createQuery(
+                SQL_FIND_CERTIFICATE_BY_NAME,
+                Service.class);
         typedQuery.setParameter("name", name);
         try {
-            Certificate certificate = typedQuery.getSingleResult();
-            return Optional.ofNullable(certificate);
+            Service service = typedQuery.getSingleResult();
+            return Optional.ofNullable(service);
         } catch (NoResultException ex) {
             return Optional.empty();
         }
+    }
+
+    public void deleteDesiredDevs(int serviceId) {
+        em.createNativeQuery(SQL_DELETE_DESIRED_DEVS + serviceId).executeUpdate();
     }
 }

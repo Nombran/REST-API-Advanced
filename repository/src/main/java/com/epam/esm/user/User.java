@@ -1,9 +1,12 @@
 package com.epam.esm.user;
 
-import com.epam.esm.order.Order;
+import com.epam.esm.service.Service;
+import com.epam.esm.tag.Tag;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -29,6 +32,30 @@ public class User {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "user")
-    private List<Order> orders;
+    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,mappedBy = "creator")
+    private List<Service> createdServices;
+    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
+    @JoinTable(name = "user_desired_services",
+            joinColumns = {@JoinColumn(name = "user_id", nullable = false)},
+            inverseJoinColumns = {@JoinColumn(name = "service_id", nullable = false)})
+    private List<Service> desiredServices;
+    @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.MERGE}, fetch = FetchType.LAZY,mappedBy = "developer")
+    private List<Service> takenServices;
+    @Column(name = "contacts")
+    private String contacts;
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "user_skills",
+            joinColumns = {@JoinColumn(name = "user_id", nullable = false)},
+            inverseJoinColumns = {@JoinColumn(name = "tag_id", nullable = false)})
+    private List<Tag> skills;
+    @Column(name = "specialization")
+    private String specialization;
+    @Column(name = "activity")
+    private String activity;
+    @Column(name = "salary")
+    private int salary;
+    @Column(name = "about")
+    private String about;
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
 }

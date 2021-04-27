@@ -1,7 +1,7 @@
 package com.epam.esm.tag;
 
-import com.epam.esm.certificate.CertificateDao;
-import com.epam.esm.certificate.CertificateNotFoundException;
+import com.epam.esm.service.ServiceDao;
+import com.epam.esm.service.ServiceNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public class TagServiceTest {
     @Mock
     TagDao tagDao;
     @Mock
-    CertificateDao certificateDao;
+    ServiceDao serviceDao;
     @Spy
     ModelMapper modelMapper;
     @BeforeEach
@@ -130,15 +130,15 @@ public class TagServiceTest {
             Tag tagOne = new Tag(1, "first", Collections.emptyList());
             Tag tagTwo = new Tag(2, "second", Collections.emptyList());
             return Arrays.asList(tagOne, tagTwo);
-        }).when(tagDao).findTags(anyInt(), anyInt());
+        }).when(tagDao).findTags(anyInt(), anyInt(), anyString());
         int page = 1;
         int perPage = 50;
         doAnswer(invocation -> 2L).when(tagDao)
-                .getCountOfTags();
+                .getCountOfTags(null);
         PagedModel.PageMetadata expected = new PagedModel.PageMetadata(perPage, page, 2);
 
         //When
-        PagedModel<TagDto> model = tagService.findTags(page, perPage);
+        PagedModel<TagDto> model = tagService.findTags(page, perPage, null);
 
         //Then
         assertEquals(expected, model.getMetadata());
@@ -147,12 +147,12 @@ public class TagServiceTest {
     @Test
     public void findTagsByCertificateId_nonexistentId_shouldThrowException() {
         //Given
-        doAnswer(invocation -> Optional.empty()).when(certificateDao)
+        doAnswer(invocation -> Optional.empty()).when(serviceDao)
                 .find(anyLong());
         long idForFind = 1;
 
         //When Then
-        Assertions.assertThrows(CertificateNotFoundException.class,
+        Assertions.assertThrows(ServiceNotFoundException.class,
                 ()->tagService.findTagsByCertificateId(idForFind));
     }
 }
